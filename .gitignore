@@ -1,0 +1,43 @@
+#build-files
+*.so
+*.d
+
+
+#Backup files from various editors
+*.save
+*~
+*.swp
+*.layout
+*#*
+
+#Documentation directories and files
+html/
+latex/
+tmp/
+doc/classdiagramRawEvent.svg
+config/cfgs
+optional
+ValgrindOut.xml
+
+#Compressed Files
+*.bz2
+*.tgz
+*.tar.gz
+*.gz
+
+#DAMM/ROOT files
+*.drr
+*.his
+*.list
+*.log
+*.root
+# Data directories
+HIS
+LDF
+HIS/*
+LDF/*
+data
+his
+his/*
+ldf
+ldf/*
