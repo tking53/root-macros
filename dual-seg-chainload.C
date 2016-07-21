@@ -23,23 +23,23 @@
       C->Add(ss.str().c_str());
   }
 
-  TChain *V = new TChain("Tab");
+  // TChain *V = new TChain("Tab");
   
-  for (int i=1;i<11;i++){
-      stringstream ss;
-      if (i <10){
-	ss<<"/home/tking/segment-94/094rb_14-seg-0"<<i<<".root";
-      }
-      else if (i >= 10){
-	ss<<"/home/tking/segment-94/094rb_14-seg-"<<i<<".root";
-      }
+  // for (int i=1;i<11;i++){
+  //     stringstream ss;
+  //     if (i <10){
+  // 	ss<<"/home/tking/segment-94/094rb_14-seg-0"<<i<<".root";
+  //     }
+  //     else if (i >= 10){
+  // 	ss<<"/home/tking/segment-94/094rb_14-seg-"<<i<<".root";
+  //     }
       
-      V->Add(ss.str().c_str());
-  }
+  //     V->Add(ss.str().c_str());
+  // }
 
-  //  C->Print();
-  V->Print();
- 
+  C->Print();
+  //V->Print();
+  //  C->AddFriend("Tab")
 }
 
 
