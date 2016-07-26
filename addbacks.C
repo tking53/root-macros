@@ -18,7 +18,7 @@
 
 
 
-void symplot(const char* savename){
+void ABplot(const char* savename){
 
   gROOT->SetBatch(kTRUE);
   
@@ -50,6 +50,46 @@ void symplot(const char* savename){
   GvN->SetMinimum(3);
   NvL->SetMinimum(3);
 
+  TH1D* Ll = new TH1D("Ll","Beam Left LaBr beta-gated singles",8000.,0.,8000.);
+  TH1D* Lr = new TH1D("Lr","Beam right LaBr beta-gated singles",8000.,0.,8000.);
+
+  TList *left = new TList;
+  TList *right = new TList;
+
+  unsigned  int leftLabr=8;
+  
+  for (unsigned int i=1;i<=leftLabr;i++){
+    stringstream ss;
+    stringstream sss;
+    ss<<"Ll"<<leftLabr;
+    sss<<"Left LaBr3 (number "<<leftLabr<<")";
+    TH1D* temp = new TH1D(ss.str().c_str(),sss.str().c_str(),8000.,0.,8000.);
+    A->Draw("sing.LaBr[i]>>temp","sing.beta>0");
+    left->Add(temp);
+  }
+  
+  
+  unsigned  int rightLabr=15;
+
+  TH1D* Lr0 = new TH1D("Lr0","Right LaBr3 (number 0)",8000.,0.,8000.);
+  A->Draw("sing.LaBr[0]>>Lr0","sing.beta>0");
+  right->Add(Lr0);
+		       
+  
+  for (unsigned int i=9;i<=rightLabr;i++){
+    stringstream ss;
+    stringstream sss;
+    ss<<"Lr"<<rightLabr;
+    sss<<"right LaBr3 (number "<<rightLabr<<")";
+    TH1D* temp2 = new TH1D(ss.str().c_str(),sss.str().c_str(),8000.,0.,8000.);
+    A->Draw("sing.LaBr[i]>>temp2","sing.beta>0");
+    right->Add(temp2);
+  }
+
+  Ll->Merge(left);
+  Lr->Merge(right);
+
+  
 
   f->Write();
   gApplication->Terminate(0);
