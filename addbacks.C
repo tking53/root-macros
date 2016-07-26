@@ -1,4 +1,5 @@
 #include "TSystem.h"
+#include "TApplication.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TH2D.h"
@@ -37,12 +38,21 @@ void symplot(const char* savename){
 
   TFile *f = new TFile(savename,"RECREATE");
 
-  TH2D* Gxvy = new TH2D("Gxvy","GsymX (x) vs GsymY (y)",8000.,0.,8000.,8000.,0.,8000.);
+  TH2D* GvL = new TH2D("GvL","Ge addback (X) vs LaBr3 addback (Y)",8000.,0.,8000.,8000.,0.,8000.);
+  TH2D* GvN = new TH2D("GvN","Ge addback (X) vs NaI addback (Y)",8000.,0.,8000.,8000.,0.,8000.);
+  TH2D* NvL = new TH2D("NvL","NaI addback (X) vs LaBr3 addback (Y)",8000.,0.,8000.,8000.,0.,8000.);
 
-  A->Draw("Gpro.SymY:Gpro.SymX>>Gxvy");
+  A->Draw("Lpro.AbE:Gpro.AbE>>GvL");
+  A->Draw("Npro.AbE:Gpro.AbE>>GvN");
+  A->Draw("Lpro.AbE:Npro.AbE>>NvL");
+
+  GvL->SetMinimum(3);
+  GvN->SetMinimum(3);
+  NvL->SetMinimum(3);
+
 
   f->Write();
-  gApplication->Terminate(0)
+  gApplication->Terminate(0);
   
 }
 
