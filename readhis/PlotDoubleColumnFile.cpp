@@ -19,13 +19,13 @@ void PlotDoubleColumnFile( void );
 //THIS IS WHERE YOU CHANGE FILENAME, BINNING AND ETC!
 
 
-static const int numberFiles = 3;// number of files to plot
+static const int numberFiles = 1;// number of files to plot
 
 
 //name of text file(s) to plot
 static const char* s_FileNames[] =
 {
-    "84Br_data_6320.txt","84Br_corr20_6320.txt","84Br_corr2_6320.txt",
+    "multiTFilltest-3245.txt",
 };
 
 //example:
@@ -47,14 +47,14 @@ float maxXRange=8192;//5000.5;
 int binNumber=maxXRange;
 
 //name for axes and title
-const char *titleName=" ";
-const char *XaxisName="Energy (keV)";
-const char *YaxisName="Counts";
+const char *titleName=" QDC vs ToF";
+const char *XaxisName="ToF";
+const char *YaxisName="QDC";
 
 
 //Normalization for multiple histograms set here
 
-static const int normalize = 1;// if = 1, will normalize histograms (if plotting multiples)
+static const int normalize = 0;// if = 1, will normalize histograms (if plotting multiples)
 
 
 //For now normalizes all histograms to 1
