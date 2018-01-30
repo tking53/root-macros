@@ -1,6 +1,7 @@
 #build-files
 *.so
 *.d
+*.pcm
 
 
 #Backup files from various editors
