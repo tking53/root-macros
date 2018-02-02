@@ -27,7 +27,7 @@ void totalsPlot(const char* inputname, const char* savename, const bool totalsOn
   TFile  *f = TFile::Open(inputname);
 
   //  std::string saveFile = savename =".root";
-  //  TFile fnew(saveFile,"RECREATE");
+  //  TFile fnew(saveFillayerse,"RECREATE");
   TFile fnew(savename,"RECREATE");
 
   TTree *Tsing = (TTree*)f->Get("GSsingles");
