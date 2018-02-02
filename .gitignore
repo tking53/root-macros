@@ -2,7 +2,7 @@
 *.so
 *.d
 *.pcm
-
+*_ACLiC_*
 
 #Backup files from various editors
 *.save
