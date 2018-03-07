@@ -18,7 +18,7 @@
 #include <string>
 
 //void totalsPlot(const char* inputname, const char* savename, const bool totalsOnly = false,const bool batchMode=false){
-void totalsPlot(const char* savename,const bool batchMode=true,  const bool totalsOnly = false){
+void totalsPlotter2(const char* savename,const bool batchMode=true,  const bool totalsOnly = false){
   //using namespace std;
   if (batchMode){
     gROOT->SetBatch(kTRUE);

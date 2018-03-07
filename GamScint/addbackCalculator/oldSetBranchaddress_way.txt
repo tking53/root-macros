@@ -1,0 +1,47 @@
+
+  /// ROOT 5 WAY (old and its segfaulting, probably from a type mismatch)
+  // Gsing->SetBranchAddress("GS_Energy",&GS_Energy);
+  // Gsing->SetBranchAddress("GS_EvtNum",&GS_EvtNum);
+  // Gsing->SetBranchAddress("GS_BunchNum",&GS_BunchNum);
+  // Gsing->SetBranchAddress("GS_Num",&GS_Num);
+  // Gsing->SetBranchAddress("GS_Time",&GS_Time);
+  // Gsing->SetBranchAddress("GS_HasLowResBeta",&GS_HasLowResBeta);
+  // Gsing->SetBranchAddress("GS_Type",&GS_Type);
+  // Gsing->SetBranchAddress("GS_Group",&GS_Group);
+
+  // for ( Long64_t i=0,N=Gsing->GetEntries();i<N;i++){
+  //   Gsing->GetEntry(i);
+  //   cout<<"it="<<i<<endl;
+  //   if (i == 10000)
+  //     break;
+
+    // groupList.emplace((*GS_Group));
+    // if ((*GS_EvtNum) != EvtLast){
+    //   pixieEvtVec.emplace_back(entryToEvt);
+    //   entryToEvt.clear();
+    //   EvtLast=(*GS_EvtNum);
+    //   cout<<"Cleared the inner vector"<<endl;
+    //   if (EvtLast == 10){
+    //     break;
+    //   }
+    // }
+    // entryToEvt.emplace_back(it);
+  }
+
+  // for (auto it=groupList.begin(); it != groupList.end();it++){
+  //   if (strncmp((*it).c_str(),"sh",2) == 0){
+  //     std::vector<GSAddback> *tmp1 = new std::vector<GSAddback>;
+  //     shAddbackMap.emplace((*it),(*tmp1)); 
+  //   } else if (strncmp((*it).c_str(),"nai",2) == 0){
+  //     std::vector<GSAddback> *tmp1 = new std::vector<GSAddback>;
+  //     naiAddbackMap.emplace((*it),(*tmp1));       
+  //   }
+  // }
+
+  // for (auto itOut = pixieEvtVec.begin();itOut != pixieEvtVec.end(); itOut++){
+  //   for (auto itIn = itOut->begin(); itIn != itOut->end(); itIn++){
+  //     cout<<"Huzzah"<<endl;
+  //   }
+ 
+  // }
+    

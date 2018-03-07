@@ -1,5 +1,6 @@
--I /home/setsuna/programs/Modules/Module-Packages/ROOT/6.12.04/install/include
+-I/home/setsuna/programs/Modules/Module-Packages/ROOT/6.12.04/install/include 
+-I /opt/root/6.12.04/include/
+-IaddbackCalculator/
+-IaddbackPlotter/
+-ItotalsPlotter/
 -std=c++11
--I addbackCalc/
--I addbackPlotter/
--I totalsPlotter/

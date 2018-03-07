@@ -1,3 +1,6 @@
+#ifndef GSAddback_h
+#define GSAddback_h
+
 class GSAddback {
 public:
   /** Default constructor setting things to zero */
@@ -19,3 +22,6 @@ public:
   Double_t time;//!< time of the addback event
   unsigned multiplicity;//!< multiplicity of the event
 };
+
+
+#endif //end include guard
