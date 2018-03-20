@@ -35,22 +35,9 @@ void AddbackCalculator::Begin(TTree* GSsinglesAB )
   // The tree argument is deprecated (on PROOF 0 is passed).
 
   singReader.SetTree( GSsinglesAB );
-  cout<<"forloop start"<<endl;
-  //  cout<<"singVec size"<< singVec.GetSize()<<endl;
-
-  /*
-  int cou=0;
-   for ( auto it=singVec.begin();it!=singVec.end();it++){
-     cout<<"for loop inter count= "<<cou<<endl;
-     // typeList.emplace((*it).Type);
-     //groupList.emplace((*it).Group);
-    //PEvt.emplace((*it).EvtNum);
-    cou++;
-  }
-  */
-
-  typeList = {"nai","smallhag"};
-  groupList = {"shg0","shg1","shg2","shg3","naiL0","naiL1","naiTop"};
+  
+  typeList = {"nai","smallhag","clover"};
+  groupList = {"shg0","shg1","shg3","shg4","naiL0","naiL1","naiL2","clover"};
 
   stringstream typelist, grouplist;
   
@@ -68,9 +55,9 @@ void AddbackCalculator::Begin(TTree* GSsinglesAB )
       grouplist<<", "<<(*it);
   }
   
-  cout<<"Number of Pixie Events in the Tree is "<<PEvt.size()<<endl
-      <<"The Types that are present are"<<typelist.str().c_str()<<endl
-      <<"The Groups present are"<<grouplist.str().c_str()<<endl;
+  // cout<<"Number of Pixie Events in the Tree is "<<PEvt.size()<<endl
+  //     <<"The Types that are present are"<<typelist.str().c_str()<<endl
+  //     <<"The Groups present are"<<grouplist.str().c_str()<<endl;
 
   TString option = GetOption();
   NgammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
@@ -84,11 +71,15 @@ void AddbackCalculator::Begin(TTree* GSsinglesAB )
     SHgammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
     NSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
     SHSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
+    GegammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
+    GeSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
   } else {
     NgammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("NGT"))->GetVal();
     NSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("NSeW"))->GetVal();
     SHgammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("SHGT"))->GetVal();
     SHSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("SHSeW"))->GetVal();
+    GegammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("GeGT"))->GetVal();
+    GeSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("GeSeW"))->GetVal();
   }
   
   std::map <std::string,double > paraData ;
@@ -103,7 +94,13 @@ void AddbackCalculator::Begin(TTree* GSsinglesAB )
   ParameterMap.emplace("smallhag",paraData);
   paraData.clear();
 
+    
+  paraData.insert(make_pair("thresh",GegammaThresh));
+  paraData.insert(make_pair("subEvtWin",GeSeW));
+  ParameterMap.emplace("clover", paraData);
+  paraData.clear();
   // need to put the new tree here.
+
 }
 
 void AddbackCalculator::SlaveBegin(TTree * /*tree*/)
@@ -112,15 +109,51 @@ void AddbackCalculator::SlaveBegin(TTree * /*tree*/)
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
+  std::map<std::string,std::vector<GSAddback>> naiAddMap, shAddMap, geAddMap;
+
   TString option = GetOption();
+
+
+  TNamed *out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE_LOCATION");
+  Info("SlaveBegin", "PROOF_OUTPUTFILE_LOCATION: %s", (out ? out->GetTitle() : "undef"));
+  fProofFile = new TProofOutputFile("/home/hanayo/research/thesis/ornl2016/interHolding/","M");
+  out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE");
+  if (out)
+    fProofFile->SetOutputFileName(out->GetTitle());
+
+  TDirectory *savedir = gDirectory;
+  if (!(outFile = fProofFile->OpenFile("RECREATE"))) {
+    Warning("SlaveBegin", "problems opening file: %s/%s", fProofFile->GetDir(), fProofFile->GetFileName());
+  }
+
+  outFile=fProofFile->OpenFile("RECREATE");
+  if (outFile && outFile->IsZombie()) SafeDelete(outFile);
+
+  // Cannot continue
+  if (!outFile) {
+    Info("SlaveBegin", "could not create '%s': instance is invalid!", fProofFile->GetName());
+    return;
+  }
+
+
   GabR = new TTree("GabRoot","Gamma Scint Addback(Root Calc)");
   GabR->Branch("ABEnergy",&ABEnergy);
   GabR->Branch("ABEvtNum",&ABEvtNum);
   GabR->Branch("ABMulti",&ABMulti);
   GabR->Branch("ABType",&ABType);
+  GabR->Branch("ABGroup",&ABGroup);
   GabR->Branch("ABbunchNum",&ABbunchNum);
   GabR->Branch("ABhasLRBeta",&ABhasLRBeta);
-}
+  GabR->Branch("ABevtTotal",&ABevtTotal);
+  GabR->Branch("ABhasLRBeta",&ABhasLRBeta);
+  GabR->Branch("PbetaEnergy",&PbetaEnergy);
+
+  //  GabR->Branch("PevtNum",&PevtNum);
+  // GabR->Branch("PbunchNum",&PbunchNum);
+  GabR->SetDirectory(outFile);
+  GabR->AutoSave();
+  //  fOutput->Add(GabR);
+ }
 
 Bool_t AddbackCalculator::Process(Long64_t entry)
 {
@@ -142,63 +175,153 @@ Bool_t AddbackCalculator::Process(Long64_t entry)
   // The return value is currently not used.
   singReader.SetEntry(entry);
 
-  //might need special processing for events of size = 1
-  //   if (!singVec.GetSize()==1 ||  )
-
+  naiAddMap.clear();
+  shAddMap.clear();
+  geAddMap.clear();
   std::set<std::string> iGroup;
-  // cout<<"got to process"<<endl;
-  
-  //   for (auto iGr=PEsing_Group.begin(); iGr!=PEsing_Group.end();iGr++){
-     //for (auto iGr=singVec.begin(); iGr!=singVec.end();iGr++){
   for (auto iGr=groupList.begin(); iGr!=groupList.end();iGr++){
        if (strncmp((*iGr).c_str(),"sh",2) == 0){
          auto *tmp1 = new std::vector<GSAddback>;
+         //cout<<"vector made for "<<(*iGr)<<endl;
          //initalize addbacks (e=0,m=0, t= -2* the sub event window (converted to ns because the input times are in ns))
-         tmp1->emplace_back(GSAddback(0.0,0.0,-2.0*NSeW*1e9));
+         tmp1->emplace_back(GSAddback(0.0,-2.0*NSeW*1e9,0.0,0,0));
 
-         shAddMap.emplace((*iGr),(*tmp1)); 
+         shAddMap.emplace((*iGr),(*tmp1));
        } else if (strncmp((*iGr).c_str(),"nai",3) == 0){
          auto *tmp1 = new std::vector<GSAddback>;
+         //cout<<"vector made for "<<(*iGr)<<endl;
          //initalize addbacks (e=0,m=0, t= -2* the sub event window (converted to ns because the input times are in ns))
-         tmp1->emplace_back(GSAddback(0.0,0.0,-2.0*SHSeW*1e9));
-         naiAddMap.emplace((*iGr),(*tmp1));       
+         tmp1->emplace_back(GSAddback(0.0,-2.0*SHSeW*1e9,0.0,0,0));
+         naiAddMap.emplace((*iGr),(*tmp1));
+       } else if ((*iGr) == "clover"){
+         //init  clover addback
+         auto *tmp1 = new std::vector<GSAddback>;
+         tmp1->emplace_back(GSAddback(0.0,-2.0*GeSeW*1e9,0.0,0,0));
+         geAddMap.emplace("clover",(*tmp1));
        }
-     }
-  cout<<"maps Made"<<endl;
+  }
+
+
+
+  //cout<<endl<<"NEW PIXIE EVENT"<<endl<<"maps Made"<<endl;
+  int counter=0;
   for (auto iSing=singVec.begin(); iSing != singVec.end(); iSing++){
+    //setting event wide things so it doesnt matter if it gets reset every for loop run since they should be the same
+    ABbunchNum = iSing->BunchNum;
+    PbetaEnergy = iSing->BetaEnergy;
+    ABhasLRBeta = iSing->HasLowResBeta;
+
+
+
+
     if (iSing->Type == "smallhag"){
       if (iSing->Energy < ParameterMap.find("smallhag")->second.find("thresh")->second)
         continue;
-      cout<<"HAG iSing loop entered"<<endl;
       auto tmp = shAddMap.find((*iSing).Group);
       Double_t dtime = abs((iSing->Time) - tmp->second.back().time) ;
       if (dtime > ParameterMap.find("smallhag")->second.find("subEvtWin")->second){
         //fill plot etc
-        tmp->second.emplace_back(GSAddback(0,0,-2*SHSeW*1e9));
+        tmp->second.emplace_back(GSAddback(0,-2*SHSeW*1e9,0.0,0,0));
+      }
+      if(tmp->second.back().multiplicity == 0){
+        tmp->second.back().ftime = iSing->Time;
+        tmp->second.back().abevtnum = iSing->EvtNum;
       }
       tmp->second.back().energy +=(iSing->Energy);
       tmp->second.back().time +=(iSing->Time);
       tmp->second.back().multiplicity += 1;
+      
 
-
-    }else if (iSing->Type == "nai") {
+    }
+    //NAI
+    else if (iSing->Type == "nai") {
       if (iSing->Energy < ParameterMap.find("nai")->second.find("thresh")->second)
         continue;
-      
+
       auto tmp = naiAddMap.find((*iSing).Group);
       Double_t dtime = abs((iSing->Time) - tmp->second.back().time) ;
       if (dtime > ParameterMap.find("nai")->second.find("subEvtWin")->second){
         //fill plot etc
-        tmp->second.emplace_back(GSAddback(0,0,-2*SHSeW*1e9));
+        tmp->second.emplace_back(GSAddback(0,-2*NSeW*1e9,0.0,0,0));
+      }
+      if(tmp->second.back().multiplicity == 0){
+        tmp->second.back().ftime = iSing->Time;
+        tmp->second.back().abevtnum = iSing->EvtNum;
       }
       tmp->second.back().energy +=(iSing->Energy);
       tmp->second.back().time +=(iSing->Time);
       tmp->second.back().multiplicity += 1;
 
     }
-    
+    //CLOVER 
+    else if (iSing->Type == "clover") {
+      if (iSing->Energy < ParameterMap.find("clover")->second.find("thresh")->second)
+        continue;
+      
+      auto tmp = geAddMap.find((*iSing).Group);
+      Double_t dtime = abs((iSing->Time) - tmp->second.back().time) ;
+      if (dtime > ParameterMap.find("clover")->second.find("subEvtWin")->second){
+        //fill plot etc
+        tmp->second.emplace_back(GSAddback(0,-2*GeSeW*1e9,0.0,0,0));
+      }
+      if(tmp->second.back().multiplicity == 0){
+        tmp->second.back().ftime = iSing->Time;
+        tmp->second.back().abevtnum = iSing->EvtNum;
+      }
+      tmp->second.back().energy +=(iSing->Energy);
+      tmp->second.back().time +=(iSing->Time);
+      tmp->second.back().multiplicity += 1;
+
+    }
+    else {
+      counter++;
+      continue;
+    }
+    //cout<<""<<endl;
+    counter++;
   }
-  
+
+  Double_t ABVTotal=0;
+  for (auto it = groupList.begin();it!=groupList.end();it++){
+    std::vector<GSAddback> ABV;
+    if (strncmp((*it).c_str(), "sh", 2) == 0){
+      ABV = shAddMap.find((*it))->second;
+      ABType = "smallhag";
+      ABGroup = (*it);
+    }else if (strncmp((*it).c_str(), "nai", 3) == 0){
+      ABV = naiAddMap.find((*it))->second;
+      ABType = "nai";
+      ABGroup = (*it);
+    }else if (strncmp((*it).c_str(), "clover", 4) == 0){
+      ABV = geAddMap.find((*it))->second;
+      ABType = "clover";
+      ABGroup = (*it);
+    } else{
+      continue;
+    }
+    for (auto itABV = ABV.begin();itABV!=ABV.end();itABV++){
+      ABEnergy = itABV->energy;
+      ABEvtNum = itABV->abevtnum;
+      ABMulti = itABV->multiplicity; 
+      ABVTotal += itABV->energy;
+      GabR->Fill();
+    }
+  }
+      
+  ABEnergy = 0;
+  ABEvtNum = 0;
+  ABMulti = 0;
+  ABType = "";
+  ABGroup = "";
+  ABbunchNum = 0;
+  ABhasLRBeta = false;
+  ABevtTotal = 0;
+  ABhasLRBeta = 0;
+  PbetaEnergy = 0;
+
+  ABevtTotal = ABVTotal;
+  GabR->Fill();
+
   return kTRUE;
 }
 
@@ -207,7 +330,7 @@ void AddbackCalculator::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
-
+if 
 }
 
 void AddbackCalculator::Terminate()
@@ -229,6 +352,7 @@ void AddbackCalculator::Terminate()
   */
 
   outFile = new TFile("GabRootTestOutput.root","RECREATE");
+  GetOutputList()->Write();
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
