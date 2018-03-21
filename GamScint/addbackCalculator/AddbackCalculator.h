@@ -13,7 +13,6 @@
 
 // Headers needed by this particular selector
 #include "GammaScintStruc.hpp"
-#include "GSaddback.hpp"
 #include <TParameter.h>
 #include <vector>
 #include <map>
@@ -25,13 +24,13 @@
 #if (WHAT_COMPUTER == 0)
 #define PPATH "/home/hanayo/programs/root-macros/GamScint/addbackCalculator"
 #define OUTPATH "/home/hanayo/research/ornl2016/thesis/rootFiles"
-#include "/home/hanayo/programs/root-macros/GamScint/addbackCalculator/GSaddback.hpp"
+#include "/home/hanayo/programs/root-macros/GamScint/GSaddback.hpp"
 #endif
 
 #if (WHAT_COMPUTER == 1)
 #define PPATH "/home/setsuna/programs/root-macros/GamScint/addbackCalculator"
 #define OUTPATH "/home/setsuna/programs/paass/testingRuns/"
-#include "/home/setsuna/programs/root-macros/GamScint/addbackCalculator/GSaddback.hpp"
+#include "/home/setsuna/programs/root-macros/GamScint/GSaddback.hpp"
 #endif
 
 class AddbackCalculator : public TSelector {

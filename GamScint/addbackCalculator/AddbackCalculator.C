@@ -23,7 +23,7 @@
 // root> T->Process("AddbackCalculator.C","some options")
 // root> T->Process("AddbackCalculator.C+")
 //
-#include "GSaddback.hpp"
+
 #include "AddbackCalculator.h"
 #include <TH2.h>
 #include <TStyle.h>
@@ -114,26 +114,26 @@ void AddbackCalculator::SlaveBegin(TTree * /*tree*/)
   TString option = GetOption();
 
 
-  TNamed *out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE_LOCATION");
-  Info("SlaveBegin", "PROOF_OUTPUTFILE_LOCATION: %s", (out ? out->GetTitle() : "undef"));
-  fProofFile = new TProofOutputFile("/home/hanayo/research/thesis/ornl2016/interHolding/","M");
-  out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE");
-  if (out)
-    fProofFile->SetOutputFileName(out->GetTitle());
+  // TNamed *out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE_LOCATION");
+  // Info("SlaveBegin", "PROOF_OUTPUTFILE_LOCATION: %s", (out ? out->GetTitle() : "undef"));
+  // fProofFile = new TProofOutputFile("/home/hanayo/research/thesis/ornl2016/interHolding/","M");
+  // out = (TNamed *) fInput->FindObject("PROOF_OUTPUTFILE");
+  // if (out)
+  //   fProofFile->SetOutputFileName(out->GetTitle());
 
-  TDirectory *savedir = gDirectory;
-  if (!(outFile = fProofFile->OpenFile("RECREATE"))) {
-    Warning("SlaveBegin", "problems opening file: %s/%s", fProofFile->GetDir(), fProofFile->GetFileName());
-  }
+  // TDirectory *savedir = gDirectory;
+  // if (!(outFile = fProofFile->OpenFile("RECREATE"))) {
+  //   Warning("SlaveBegin", "problems opening file: %s/%s", fProofFile->GetDir(), fProofFile->GetFileName());
+  // }
 
-  outFile=fProofFile->OpenFile("RECREATE");
-  if (outFile && outFile->IsZombie()) SafeDelete(outFile);
+  // outFile=fProofFile->OpenFile("RECREATE");
+  // if (outFile && outFile->IsZombie()) SafeDelete(outFile);
 
-  // Cannot continue
-  if (!outFile) {
-    Info("SlaveBegin", "could not create '%s': instance is invalid!", fProofFile->GetName());
-    return;
-  }
+  // // Cannot continue
+  // if (!outFile) {
+  //   Info("SlaveBegin", "could not create '%s': instance is invalid!", fProofFile->GetName());
+  //   return;
+  // }
 
 
   GabR = new TTree("GabRoot","Gamma Scint Addback(Root Calc)");
@@ -150,9 +150,9 @@ void AddbackCalculator::SlaveBegin(TTree * /*tree*/)
 
   //  GabR->Branch("PevtNum",&PevtNum);
   // GabR->Branch("PbunchNum",&PbunchNum);
-  GabR->SetDirectory(outFile);
-  GabR->AutoSave();
-  //  fOutput->Add(GabR);
+  //  GabR->SetDirectory(outFile);
+  //GabR->AutoSave();
+  fOutput->Add(GabR);
  }
 
 Bool_t AddbackCalculator::Process(Long64_t entry)
@@ -318,7 +318,7 @@ Bool_t AddbackCalculator::Process(Long64_t entry)
   ABevtTotal = 0;
   ABhasLRBeta = 0;
   PbetaEnergy = 0;
-
+  
   ABevtTotal = ABVTotal;
   GabR->Fill();
 
@@ -330,7 +330,7 @@ void AddbackCalculator::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
-if 
+
 }
 
 void AddbackCalculator::Terminate()
@@ -352,7 +352,10 @@ void AddbackCalculator::Terminate()
   */
 
   outFile = new TFile("GabRootTestOutput.root","RECREATE");
-  GetOutputList()->Write();
+  TIter next(GetOutputList());
+  while( TObject* obj = next() ){
+    obj->Write();
+  }
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.
