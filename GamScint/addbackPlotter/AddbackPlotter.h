@@ -41,7 +41,8 @@ public :
 
   TTree *GabR; //output tree
   TFile *outFile; //output file
-  TProofOutputFile *fProofFile; //intermediate proof outputfile
+
+  std::string outputFilePrefix;
 
   // Readers to access the data (delete the ones you do not need).
 
