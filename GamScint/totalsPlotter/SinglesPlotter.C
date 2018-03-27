@@ -195,10 +195,10 @@ Bool_t SinglesPlotter::Process(Long64_t entry)
    ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill(((*GS_Time)-(*GS_BetaTime)+100),(*GS_Energy));
    
    //This one probably will be garbage because its its type unspecific 
-   ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill(((*GS_Time)-(*GS_BetaTime)+100),(*GS_BetaEnergy));
+   ((TH2D*)singHistArray->FindObject("fullwalkcheck"))->Fill(((*GS_Time)-(*GS_BetaTime)+100),(*GS_BetaEnergy));
                                                                      
                                                                      
-   //These might need the multiplicities divided by the number of entries (because of how i filled the tree in paass); in which chase they will need reploted; but the relative heights should workers
+   //These might need the multiplicities divided by the number of entries (because of how i filled the tree in paass); in which chase they will need reploted; but the relative heights should work
    hist2Fill.str("");
    hist2Fill<<(*GS_Type)<<"Multi";
    if ((*GS_Type) =="smallhag"){
@@ -209,7 +209,7 @@ Bool_t SinglesPlotter::Process(Long64_t entry)
      ((TH1D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_clovermulti));
    }
    
-   ((TH1D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_BetaMulti));
+   ((TH1D*)singHistArray->FindObject("betaMulti"))->Fill((*GS_BetaMulti));
    
    hist2Fill.str("");
    hist2Fill<<(*GS_Type)<<"EvtStartTDiff";
@@ -217,12 +217,13 @@ Bool_t SinglesPlotter::Process(Long64_t entry)
      
    hist2Fill.str("");
    hist2Fill<<(*GS_Type)<<"InBun";
-   Double_t InBunTime= (((*GS_Time)-(*GS_LastBunchTime)*1.e9)/1.e3);
-   ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_Energy),((*GS_Time)-(*GS_LastBunchTime)*1.e9)/1.e3);
+    Double_t InBunTime= (((*GS_Time)-(*GS_LastBunchTime))*1.e9) / 1.e3;
+    cout<<"inbunTime= "<<endl;
+   ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_Energy),InBunTime);
    
    hist2Fill.str("");
    hist2Fill<<(*GS_Type)<<"InBunBG";
-   ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_Energy),((*GS_Time)-(*GS_LastBunchTime)*1.e9)/1.e3; );
+   ((TH2D*)singHistArray->FindObject(hist2Fill.str().c_str()))->Fill((*GS_Energy),InBunTime);
    
    
        
