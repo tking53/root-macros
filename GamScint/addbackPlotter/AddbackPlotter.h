@@ -18,14 +18,17 @@
 #include <string>
 #include <sstream>
 #include <TProofServ.h>
+#include <GammaScintStruc.hpp>
+#include <GSaddback.hpp>
 
 #define WHAT_COMPUTER 0
 
 #if (WHAT_COMPUTER == 0)
 #define PPATH "/home/hanayo/programs/root-macros/GamScint/addbackCalculator"
 #define OUTPATH "/home/hanayo/research/ornl2016/thesis/rootFiles"
-#include "/home/hanayo/programs/root-macros/GamScint/GSaddback.hpp"
-#include "/home/hanayo/programs/root-macros/GamScint/GammaScintStruc.hpp"
+//#include "/home/hanayo/programs/root-macros/GamScint/GSaddback.hpp"
+//#include "/home/hanayo/programs/root-macros/GamScint/GammaScintStruc.hpp"
+
 #endif
 
 #if (WHAT_COMPUTER == 1)
@@ -75,7 +78,7 @@ public :
 
   Double_t PevtNum,PbunchNum,PbetaEnergy;
   Bool_t ABhasLRBeta;
-
+  Bool_t ABhasTrigBeta;
   TObjArray *abHists;
 
   std::map<std::string,std::map<std::string,double> > ParameterMap;

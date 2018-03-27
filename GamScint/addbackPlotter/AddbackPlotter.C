@@ -35,7 +35,7 @@ void AddbackPlotter::Begin(TTree* GSsinglesAB )
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  outputFilePrefix = "4file_";
+  outputFilePrefix = "trigBetaTest_set1__";
 
 
   singReader.SetTree( GSsinglesAB );
@@ -152,10 +152,10 @@ void AddbackPlotter::SlaveBegin(TTree * /*tree*/)
   abHists->Add(new TH2D("ABvSsBG","BetaGated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
   abHists->Add(new TH2D("ABvSnBG","BetaGated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
 
-  // //Double Beta Gated (2D's)
-  // abHists->Add(new TH2D("ABvSgDBG","BetaGated Clover (Singles) vs BetaGated PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  // abHists->Add(new TH2D("ABvSsDBG","BetaGated 2\" HAGRiD (Singles) vs BetaGated PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  // abHists->Add(new TH2D("ABvSnDBG","BetaGated NaI (Singles) vs BetaGated PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  //Trigger Beta Gated (2D's)
+  abHists->Add(new TH2D("ABvSgTBG","Trigger Beta Gated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2D("ABvSsTBG","Trigger Beta Gated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2D("ABvSnTBG","Trigger Beta Gated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
 
   //add to output list
   TIter next(abHists);
@@ -194,7 +194,7 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
   //
   // The return value is currently not used.
 
-  singReader.SetEntry(entry);
+  singReader.SetLocalEntry(entry);
   
 
   naiAddMap.clear();
@@ -232,6 +232,8 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
     ABbunchNum = iSing->BunchNum;
     PbetaEnergy = iSing->BetaEnergy;
     ABhasLRBeta = iSing->HasLowResBeta;
+    ABhasTrigBeta = iSing->HasTrigBeta;
+
     std::string shortName,grpName;
     std::map<std::string,GSAddback>::iterator ABST;
     
@@ -291,6 +293,7 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
         hist2Fill<<"AB"<<shortName<<"TBG";
         ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill(ABST->second.energy);
       }//end beta gate
+
       //cout<<"ABST energy2= "<<ABST->second.energy<<endl;
       PEvtTotal += ABST->second.energy;
 
@@ -402,7 +405,14 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
         hist2Fill.str("");
         hist2Fill<<"ABvS"<<Tchar<<"BG";
         ((TH2D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
-      }//end beta gate
+      }//end LR beta gate
+
+      if (ABhasTrigBeta){
+        hist2Fill.str("");
+        hist2Fill<<"ABvS"<<Tchar<<"TBG";
+        ((TH2D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
+      }//End Trig beta gate
+
     }//end itVec
   }//end type list
 
