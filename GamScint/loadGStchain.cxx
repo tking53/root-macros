@@ -16,12 +16,13 @@ TProof *pr;
 
 int loadGStchain(const std::string paassFile="sing"){
 
-  pr = TProof::Open("lite://","workers=8");
+
 
   if (paassFile == "ab"){
     chain1 = new TChain("GSsinglesAB");
     abfile = true;
   } else{
+    pr = TProof::Open("lite://","workers=6");
     chain1 = new TChain("GSsingles");
     chain2 = new TChain("GSaddback");
     abfile=false;
@@ -31,11 +32,11 @@ int loadGStchain(const std::string paassFile="sing"){
     for (auto it=1; it<=5 ; it++){
       if (abfile){
         std::stringstream ss;
-        ss <<"/home/hanayo/research/ornl2016/thesis/interHolding/mk2_94rb/94rb_14_set"<<it<<"/094rb_14_5scan_set"<<it<<"-GammaScintPAB.root";
+        ss <<"/home/hanayo/research/ornl2016/thesis/interHolding/mk3_94rb/94rb_14_set"<<it<<"/094rb_14_5scan_set"<<it<<"-GammaScintPAB.root";
         chain1->Add(ss.str().c_str());
       }else{
         std::stringstream ss;
-        ss << "/home/hanayo/research/ornl2016/thesis/interHolding/mk2_94rb/94rb_14_set"<<it<<"/094rb_14_5scan_set"<<it<<"-GammaScint.root";
+        ss << "/home/hanayo/research/ornl2016/thesis/interHolding/mk3_94rb/94rb_14_set"<<it<<"/094rb_14_5scan_set"<<it<<"-GammaScint.root";
         chain1->Add(ss.str().c_str());
         chain2->Add(ss.str().c_str());
       }
@@ -50,7 +51,7 @@ int loadGStchain(const std::string paassFile="sing"){
     }
 
     if (abfile){
-      chain1->SetProof();
+      // chain1->SetProof();
       std::cout << "Number of TTrees added to chain1: " << chain1->GetNtrees() << std::endl;
     } else {
       chain1->SetProof();
