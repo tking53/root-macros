@@ -14,7 +14,7 @@
 //                    to read and fill your histograms.
 //    SlaveTerminate: called at the end of the loop on the tree, when on PROOF
 //                    called on the slave servers.
-//    Terminate():    called at the end of the loop on the tree,
+//    Terminate():    called at 1the end of the loop on the tree,
 //    sometimes                a convenient place to draw/fit your histograms.
 //
 // To use this file, try the following session on your Tree T:
@@ -29,37 +29,29 @@
 #include <TStyle.h>
 #include <TSystem.h>
 
-void AddbackPlotter::Begin(TTree* GSsinglesAB )
+void AddbackPlotter::Begin(TTree* PixTree )
 {
   // The Begin() function is called at the start of the query.
   // When running with PROOF Begin() is only called on the client.
   // The tree argument is deprecated (on PROOF 0 is passed).
 
-  outputFilePrefix = "trigBetaTest_set1__";
+  outputFilePrefix = "nonGroupBool_test_";
+
+  VanQdcCut ={100,25000}; //UNCOMPRESSED
+  VanTofCut ={75,300}; //{1150,1400}->Damm Ranges -> 0.5ns/bin + 1000 bin offset
+
+  TDiffCuts.emplace("clover",500);
+  TDiffCuts.emplace("smallhag",500);
+  TDiffCuts.emplace("nai",500);
 
 
-  singReader.SetTree( GSsinglesAB );
+
+  singReader.SetTree(PixTree);
   
  
   TString option = GetOption();
   GetOutputList()->Clear();
-   // if (GetInputList()->GetEntries() == 0){
-  //   cout<<"if"<<endl;
-  // NgammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
-  // SHgammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
-  // NSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
-  // SHSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
-  // GegammaThresh = 10.; // these defaults come from the clover processor in pixie16/paass
-  // GeSeW = 1e-6; // these defaults come from the clover processor in pixie16/paass
-  // } else {
-    // cout<<"else"<<endl;
-    // NgammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("NGT"))->GetVal();
-    // NSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("NSeW"))->GetVal();
-    // SHgammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("SHGT"))->GetVal();
-    // SHSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("SHSeW"))->GetVal();
-    // GegammaThresh = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("GeGT"))->GetVal();
-    //GeSeW = dynamic_cast<TParameter<Double_t>*>(GetInputList()->FindObject("GeSeW"))->GetVal();
-  //}
+  
   cout<<"Begin Slaves"<<endl;
  }
 
@@ -68,8 +60,8 @@ void AddbackPlotter::SlaveBegin(TTree * /*tree*/)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
-  gSystem->Load("/home/hanayo/programs/paass/install/lib/libGamScintStrucLib.so");
-  gSystem->Load("/home/hanayo/programs/paass/install/lib/GamScintStruc_rdict.pcm");
+  gSystem->Load("/home/hanayo/programs/paass/install/lib/libSysRootStrucLib.so");
+  gSystem->Load("/home/hanayo/programs/paass/install/lib/SysRootStruc_rdict.pcm");
 
     
   typeList = {"nai","smallhag","clover"};
@@ -123,9 +115,9 @@ void AddbackPlotter::SlaveBegin(TTree * /*tree*/)
 
   abHists->Add(new TH1D("ABgeG","Addback(Clover)",10000.,0.,10000.));
 
-  abHists->Add(new TH2D("ABvSg","Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSs","2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSn","NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSg","Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSs","2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSn","NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
 
 
   //BETA GATED HISTS
@@ -148,14 +140,37 @@ void AddbackPlotter::SlaveBegin(TTree * /*tree*/)
 
   abHists->Add(new TH1D("ABgeGBG","BetaGated Addback(Clover)",10000.,0.,10000.));
 
-  abHists->Add(new TH2D("ABvSgBG","BetaGated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSsBG","BetaGated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSnBG","BetaGated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSgBG","BetaGated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSsBG","BetaGated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSnBG","BetaGated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
 
   //Trigger Beta Gated (2D's)
-  abHists->Add(new TH2D("ABvSgTBG","Trigger Beta Gated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSsTBG","Trigger Beta Gated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
-  abHists->Add(new TH2D("ABvSnTBG","Trigger Beta Gated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSgTBG","Trigger Beta Gated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSsTBG","Trigger Beta Gated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSnTBG","Trigger Beta Gated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+
+  //Vandle Hists
+
+  abHists->Add(new TH2D("VanQDCvsTof","Vandle QDC vs ToF (0.5ns/bin)", 1000.,0.,1000.,8192.,0,8192));
+  abHists->Add(new TH2D("VanBarvsTDif","BarNum vs TDiff (0.5ns/bin)", 2000.,-1000.,1000.,50.,0.,50.));
+
+  abHists->Add(new TH2F("ABvSgNG","Neutron Tof Gated Clover (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSsNG","Neutron Tof Gated 2\" HAGRiD (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+  abHists->Add(new TH2F("ABvSnNG","Neutron Tof Gated NaI (Singles) vs PixieEvent Addback",10000.,0.,10000.,10000.,0.,10000.));
+
+  abHists->Add(new TH1D("SshNG","Neutron Gated Singles 2\" HAGRiD",7000.,0.,7000.));
+  abHists->Add(new TH1D("SnaiNG","Neutron Gated Singles NaI",7000.,0.,7000.));
+  abHists->Add(new TH1D("SgeNG","Neutron Gated Singles Clover",7000.,0.,7000.));
+
+  abHists->Add(new TH1D("SshBG","Normal Beta Gated Singles 2\" HAGRiD",7000.,0.,7000.));
+  abHists->Add(new TH1D("SnaiBG","Normal Beta Gated Singles NaI",7000.,0.,7000.));
+  abHists->Add(new TH1D("SgeBG","Normal Beta Gated Singles Clover",7000.,0.,7000.));
+
+  abHists->Add(new TH1D("SshTBG","Trigger Beta Gated Singles 2\" HAGRiD",7000.,0.,7000.));
+  abHists->Add(new TH1D("SnaiTBG","Trigger Beta Gated Singles NaI",7000.,0.,7000.));
+  abHists->Add(new TH1D("SgeTBG","Trigger Beta Gated Singles Clover",7000.,0.,7000.));
+
+  //abHists->Add(new TH2D("VanQDCvsTof2","reGated Vandle QDC vs ToF (0.5ns/bin)", 1000.,0.,1000.,8192.,0,8192));
 
   //add to output list
   TIter next(abHists);
@@ -164,7 +179,7 @@ void AddbackPlotter::SlaveBegin(TTree * /*tree*/)
     GetOutputList()->Add(hist);
   }
   //add the 2Ds
-  while (TH2D* hist = (TH2D*)next() ){
+  while (TH2* hist = (TH2*)next() ){
     GetOutputList()->Add(hist);
   }
  }
@@ -175,8 +190,23 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
 
   std::stringstream hist2Fill;
   std::set<std::string> iGroup;
-  int counter=0; //singVec loop counter
-  Double_t PEvtTotal =0;
+  int counter=0; //GSVec loop counter
+  Double_t PEvtTotal=0;
+  Double_t PEvtGated =0;
+ 
+  //  std::map<std::string,Bool_t> abNGbool; //group bool storage for N gating
+
+  Bool_t  NGbool = false;
+
+  naiAddMap.clear();
+  shAddMap.clear();
+  geAddMap.clear();
+
+  std::vector<Double_t> *singlesVec;
+  std::vector<Double_t> *NGsinglesVec;
+  std::vector<Double_t> Gsingles, Nsingles,Hsingles; //vector of singles for the types (Used in the 2d's)
+  std::vector<Double_t> GsinglesNG, NsinglesNG,HsinglesNG; //vector of NGated singles for the types (Used in the 2d's)
+
 
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
@@ -195,83 +225,94 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
   // The return value is currently not used.
 
   singReader.SetLocalEntry(entry);
-  
 
-  naiAddMap.clear();
-  shAddMap.clear();
-  geAddMap.clear();
+  //-------------------------VANDLE -----------------------------
+  for (auto itVan=VanVec.begin();itVan!=VanVec.end();itVan++){
 
-  std::vector<Double_t> *singlesVec;
-  std::vector<Double_t> Gsingles, Nsingles,Hsingles; //vector of singles for the types (Used in the 2d's)
+    ((TH2D*)abHists->FindObject("VanQDCvsTof"))->Fill(itVan->tof*2,itVan->qdc);
+    ((TH2D*)abHists->FindObject("VanBarvsTDif"))->Fill(itVan->tdiff*2,itVan->barNum);
+    }
 
+
+  //-----------------------------------------------------------------------------------------------------
+  //-----------------------ADDBACK STUFF-----------------------------------------------------
+
+ 
   // (converted to ns because the input times are in ns)
   //initalize addbacks (e=0,t= -2* the sub event window, firstTime,multiplicity,EvtNum)
+  //initalize NG boolean map
   for (auto iGr=groupList.begin(); iGr!=groupList.end();iGr++){
        if (strncmp((*iGr).c_str(),"sh",2) == 0){
-         //auto *tmp1 = new GSAddback(0.0,-2.0*SHSeW*1e9,0.0,0,0);
          shAddMap.emplace((*iGr),GSAddback(0.0,-2.0*SHSeW*1e9,0.0,0,0));
+         //abNGbool.emplace((*iGr),false);
        }else if (strncmp((*iGr).c_str(),"nai",3) == 0){
-         //auto *tmp1 = new GSAddback(0.0,-2.0*NSeW*1e9,0.0,0,0);
          naiAddMap.emplace((*iGr),GSAddback(0.0,-2.0*NSeW*1e9,0.0,0,0));
+         //abNGbool.emplace((*iGr),false);
        } else if ((*iGr) == "clover"){
-         //auto *tmp1 = new GSAddback(0.0,-2.0*GeSeW*1e9,0.0,0,0);
          geAddMap.emplace("clover",GSAddback(0.0,-2.0*GeSeW*1e9,0.0,0,0));
+         //abNGbool.emplace((*iGr),false);
        }
   }
 
-  // if (gProofServ) {
-  //   const TString msg = TString::Format("Process() of Ord = %s called. @ spot 1",
-  //                                       gProofServ->GetOrdinal());
-  //   gProofServ->SendAsynMessage(msg);
-  // }
-  
-  // cout<<endl<<"NEW PIXIE EVENT"<<endl<<"maps Made"<<endl;
 
-  for (auto iSing=singVec.begin(); iSing != singVec.end(); iSing++){
+  for (auto iGSv=GSVec.begin(); iGSv != GSVec.end(); iGSv++){
     //setting event wide things so it doesnt matter if it gets reset every for loop run since they should be the same (if they arent that is a bigger problem :) )
-    ABbunchNum = iSing->BunchNum;
-    PbetaEnergy = iSing->BetaEnergy;
-    ABhasLRBeta = iSing->HasLowResBeta;
-    ABhasTrigBeta = iSing->HasTrigBeta;
+    ABbunchNum = iGSv->BunchNum;
+    //PbetaEnergy = iGSv->BetaEnergy;
+    ABhasLRBeta = iGSv->HasLowResBeta;
+    ABhasTrigBeta = iGSv->HasTrigBeta;
 
     std::string shortName,grpName;
     std::map<std::string,GSAddback>::iterator ABST;
-    
-    if (iSing->Type == "smallhag"){
-      ABST = shAddMap.find(iSing->Group);
+      
+    if (iGSv->Type == "smallhag"){
+      ABST = shAddMap.find(iGSv->Group);
       singlesVec = &Hsingles;
+      NGsinglesVec = &HsinglesNG;
       shortName = "sh";
-      grpName = shortName + "G" + iSing->Group.back();
-    } else if  (iSing->Type == "nai"){
-      ABST = naiAddMap.find(iSing->Group);
+      grpName = shortName + "G" + iGSv->Group.back();
+    } else if  (iGSv->Type == "nai"){
+      ABST = naiAddMap.find(iGSv->Group);
       singlesVec = &Nsingles;
+      NGsinglesVec = &NsinglesNG;
       shortName = "nai";
-      grpName = shortName + "G" + iSing->Group.back();
-    }  else if  (iSing->Type == "clover"){
-      ABST = geAddMap.find(iSing->Group); 
+      grpName = shortName + "G" + iGSv->Group.back();
+    }  else if  (iGSv->Type == "clover"){
+      ABST = geAddMap.find(iGSv->Group);
       singlesVec = &Gsingles;
+      NGsinglesVec = &GsinglesNG;
       shortName = "ge";
       grpName = shortName + "G"; 
     }else{
       Abort("UNKNOWN TYPE:: BAILING");
     }
-    
-    if (iSing->Energy < ParameterMap.find(iSing->Type)->second.find("thresh")->second){
+
+    //Trigger Singles
+    if (iGSv->HasTrigBeta){
+      hist2Fill.str("");
+      hist2Fill<<"S"<<shortName<<"TBG";
+      ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill(iGSv->Energy);
+    }
+
+    //normal betas
+    if (iGSv->HasLowResBeta){
+      hist2Fill.str("");
+      hist2Fill<<"S"<<shortName<<"BG";
+      ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill(iGSv->Energy);
+    }
+
+    if (iGSv->Energy < ParameterMap.find(iGSv->Type)->second.find("thresh")->second){
       continue;
       }
 
-    Double_t dTime = abs((iSing->Time)-ABST->second.time);
-    Double_t Sew = ParameterMap.find(iSing->Type)->second.find("subEvtWin")->second;
+    Double_t dTime = abs((iGSv->Time)-ABST->second.time);
+    Double_t Sew = ParameterMap.find(iGSv->Type)->second.find("subEvtWin")->second;
 
 
-    // if (gProofServ) {
-    //   const TString msg = TString::Format("Process() of Ord = %s called. @ spot 2",
-    //                                       gProofServ->GetOrdinal());
-    //   gProofServ->SendAsynMessage(msg);
-    // }
+
     ////cout<<"Loop 1/2"<<endl;
 
-    if (dTime > ParameterMap.find(iSing->Type)->second.find("subEvtWin")->second){
+    if (dTime > ParameterMap.find(iGSv->Type)->second.find("subEvtWin")->second){
       //filling group specific
       //cout<<"1"<<endl;
       if (ABST->second.energy>0){
@@ -294,25 +335,53 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
         ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill(ABST->second.energy);
       }//end beta gate
 
-      //cout<<"ABST energy2= "<<ABST->second.energy<<endl;
       PEvtTotal += ABST->second.energy;
 
+      // if (abNGbool.find(iGSv->Group)->second == true){
+      if (NGbool){
+        PEvtGated += ABST->second.energy;
       }
+      
+
+      }//end 0 check 
       ABST->second = GSAddback(0.0,-2.0*Sew*1e9,0.0,0,0);
       
     } //if outside of sub Evt window
     
     
     if(ABST->second.multiplicity == 0){
-      ABST->second.ftime = iSing->Time;
-      ABST->second.abevtnum = iSing->EvtNum;
+      ABST->second.ftime = iGSv->Time;
+      ABST->second.abevtnum = iGSv->EvtNum;
+
+      //Neutron Gate 2
+
+      for (auto itVan2= VanVec.begin();itVan2 != VanVec.end();itVan2++){
+        Double_t BTimeComp = abs(itVan2->sTime - iGSv->Time);
+        Bool_t InTime =false;
+        if (iGSv->Type == "clover")
+          InTime =true;
+        else if (BTimeComp <= TDiffCuts.find(iGSv->Type)->second)
+          InTime =true;
+
+        if (itVan2->qdc >VanQdcCut.first && itVan2->tof >= VanTofCut.first && itVan2->tof <=VanTofCut.second ){
+          //abNGbool.find(iGSv->Group)->second = true;
+          NGbool =true;
+          break;
+        }
+      }//VanVec loop 
+
+    }//multi==0
+
+    if (NGbool){
+      NGsinglesVec->emplace_back(iGSv->Energy);
     }
-    singlesVec->emplace_back(iSing->Energy);
-    ABST->second.energy += (iSing->Energy);
-    ABST->second.time += (iSing->Time);
+    singlesVec->emplace_back(iGSv->Energy);
+    ABST->second.energy += (iGSv->Energy);
+    ABST->second.time += (iGSv->Time);
     ABST->second.multiplicity += 1;
     //cout<<"end for Loop"<<endl;
-  }// end singVec for loop
+
+  }// end GSVec for loop
 
 
   // CATCH FOR SINGLE MULTI EVENTS 
@@ -340,6 +409,9 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
     if (ABST->second.multiplicity == 1){
       PEvtTotal += ABST->second.energy;
       
+      if (NGbool){
+        PEvtGated += ABST->second.energy;
+      }
       hist2Fill.str("");
       hist2Fill<<"AB"<<grpName;
       ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill(ABST->second.energy);
@@ -364,11 +436,9 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
     }
   }
 
-  // if (gProofServ) {
-  //   const TString msg = TString::Format("Process() of Ord = %s called. @ spot 3",
-  //                                       gProofServ->GetOrdinal());
-  //   gProofServ->SendAsynMessage(msg);
-  // }
+
+
+
   //Pixie event all addback
   hist2Fill.str("");
   hist2Fill<<"ABT";
@@ -384,37 +454,56 @@ Bool_t AddbackPlotter::Process(Long64_t entry)
   for (auto itType=typeList.begin();itType!=typeList.end();itType++){
 
     std::string Tchar;
+    std::string shortName;
     if ((*itType)== "smallhag"){
       Tchar = "s";
+      shortName = "sh";
       singlesVec = &Hsingles;
+      NGsinglesVec = &HsinglesNG;
     } else if  ((*itType) == "nai"){
       Tchar = "n";
+      shortName = "nai";
       singlesVec = &Nsingles;
+      NGsinglesVec= &NsinglesNG;
     }  else if  ((*itType) == "clover"){
       Tchar = "g";
+      shortName = "ge";
       singlesVec = &Gsingles;
+      NGsinglesVec= &GsinglesNG;
     }else{
       Abort("UNKNOWN TYPE:: BAILING");
     }
-
+    // cout<<"NG Sizes"<<endl<<Tchar<<" size= "<< (Double_T*)NGsinglesVec->size()<<endl;
     for (auto itVec=singlesVec->begin();itVec!=singlesVec->end();itVec++){
       hist2Fill.str("");
       hist2Fill<<"ABvS"<<Tchar;
-      ((TH2D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
+      ((TH2F*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
       if (ABhasLRBeta){
         hist2Fill.str("");
         hist2Fill<<"ABvS"<<Tchar<<"BG";
-        ((TH2D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
+        ((TH2F*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
       }//end LR beta gate
 
       if (ABhasTrigBeta){
         hist2Fill.str("");
         hist2Fill<<"ABvS"<<Tchar<<"TBG";
-        ((TH2D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
+        ((TH2F*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itVec),PEvtTotal);
       }//End Trig beta gate
-
     }//end itVec
-  }//end type list
+
+    for (auto itNGvec=NGsinglesVec->begin();itNGvec !=NGsinglesVec->end();itNGvec++){
+      hist2Fill.str("");
+      hist2Fill<<"ABvS"<<Tchar<<"NG";
+      ((TH2F*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itNGvec),PEvtGated);
+
+      //neutronGated Singles
+      hist2Fill.str("");
+      hist2Fill<<"S"<<shortName<<"NG";
+      ((TH1D*)abHists->FindObject(hist2Fill.str().c_str()))->Fill((*itNGvec));
+    
+    }//End neutron filling
+    
+}//end type list
 
   return kTRUE;
 }
@@ -430,16 +519,29 @@ void AddbackPlotter::SlaveTerminate()
 void AddbackPlotter::Terminate()
 {
 
+  TNamed NeutronRangeL("NeutronRangeL",VanTofCut.first);
+  TNamed NeutronRangeH("NeutronRangeH",VanTofCut.second);
+
+  TNamed QDCRangeL("QDCRangeL",VanQdcCut.first);
+  TNamed QDCRangeH("QDCRangeH",VanQdcCut.second);
+
   std::stringstream filename;
   filename << outputFilePrefix <<  "ABPlotter_Output.root";
   outFile = new TFile(filename.str().c_str(),"RECREATE");
   TIter next(GetOutputList());
   while( TObject* obj = next() ){
     obj->Write();
-    delete (obj);
+    //    delete (obj);
   }
+  NeutronRangeL.Write();
+  NeutronRangeH.Write();
+  QDCRangeL.Write();
+  QDCRangeH.Write();
+
   outFile->Close();
-  //  fChain->Close();
+  
+  // gApplication->Terminate();
+
   // The Terminate() function is the last function to be called during
   // a query. It always runs on the client, it can be used to present
   // the results graphically or save the results to file.

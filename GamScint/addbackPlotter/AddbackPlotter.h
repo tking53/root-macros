@@ -18,23 +18,20 @@
 #include <string>
 #include <sstream>
 #include <TProofServ.h>
-#include <GammaScintStruc.hpp>
-#include <GSaddback.hpp>
 
+#include <GSaddback.hpp>
+#include <GammaScintStruc.hpp>
+#include <VandleStruc.hpp>
 #define WHAT_COMPUTER 0
 
 #if (WHAT_COMPUTER == 0)
 #define PPATH "/home/hanayo/programs/root-macros/GamScint/addbackCalculator"
 #define OUTPATH "/home/hanayo/research/ornl2016/thesis/rootFiles"
-//#include "/home/hanayo/programs/root-macros/GamScint/GSaddback.hpp"
-//#include "/home/hanayo/programs/root-macros/GamScint/GammaScintStruc.hpp"
-
 #endif
 
 #if (WHAT_COMPUTER == 1)
 #define PPATH "/home/setsuna/programs/root-macros/GamScint/addbackCalculator"
 #define OUTPATH "/home/setsuna/programs/paass/testingRuns/"
-#include "/home/setsuna/programs/root-macros/GamScint/GSaddback.hpp"
 #endif
 
 class AddbackPlotter : public TSelector {
@@ -49,24 +46,12 @@ public :
 
   // Readers to access the data (delete the ones you do not need).
 
-  // TTreeReaderArray<Bool_t> PEsing_HasLowResBeta = {singReader, "PEsing.HasLowResBeta"};
-  // //  TTreeReaderArray<Bool_t> PEsing_HasMedResBeta = {singReader, "PEsing.HasMedResBeta"};
-  // TTreeReaderArray<Double_t> PEsing_Energy = {singReader, "PEsing.Energy"};
-  // //TTreeReaderArray<std::string> PEsing_Type = {singReader, "PEsing.Type"};
-  // TTreeReaderArray<Int_t> PEsing_DetNum = {singReader, "PEsing.DetNum"};
-  // TTreeReaderArray<Double_t> PEsing_Time = {singReader, "PEsing.Time"};
-  // TTreeReaderArray<Double_t> PEsing_BetaGammaTDiff = {singReader, "PEsing.BetaGammaTDiff"};
-  // TTreeReaderArray<Double_t> PEsing_BetaEnergy = {singReader, "PEsing.BetaEnergy"};
-  // TTreeReaderArray<Double_t> PEsing_BetaMulti = {singReader, "PEsing.BetaMulti"};
-  // TTreeReaderArray<Double_t> PEsing_EvtNum = {singReader, "PEsing.EvtNum"};
-  // TTreeReaderArray<Double_t> PEsing_BunchNum = {singReader, "PEsing.BunchNum"};
-  // TTreeReaderArray<Double_t> PEsing_LastBunchTime = {singReader, "PEsing.LastBunchTime"};
-  // // TTreeReaderArray<std::string> PEsing_Group = {singReader, "PEsing.Group"};
+  TTreeReaderArray<SINGLES> GSVec = {singReader,"GSsing"};
+  TTreeReaderArray<VANDLES> VanVec = {singReader,"Vandles"};
 
-  // //TTreeReaderArray<SINGLES> singVec = {singReader,"PEsing"};
-  // TTreeReaderArray<Double_t> singEvt = {singReader,"PEsing.EvtNum"};
 
-  TTreeReaderArray<SINGLES> singVec = {singReader,"PEsing"};
+  std::pair<Double_t,Double_t> VanQdcCut, VanTofCut;
+  std::map<std::string,Int_t> TDiffCuts; //map because smallhag, nai, and clover have different risetimes
 
   Double_t EvtLast = 0; //evt last counter
   std::set<std::string> groupList, typeList;
