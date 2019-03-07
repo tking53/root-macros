@@ -3,6 +3,7 @@
 *.d
 *.pcm
 *_ACLiC_*
+*.pcm
 
 #Backup files from various editors
 *.save

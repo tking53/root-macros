@@ -1,3 +1,61 @@
 {
-    "C_Cpp.intelliSenseEngineFallback": "Enabled"
+    "C_Cpp.intelliSenseEngineFallback": "Enabled",
+    "deploy.reloaded": {
+        "packages": [
+            {
+                "name": "root macros",
+                "description": "",
+                "files": [
+                    "**"
+                ],
+                "exclude": [
+                    "build/**",
+                    "install/**",
+                    "cmake-build-debug/**"
+                ],
+                "deployOnSave": false
+            }
+        ],
+        "targets": [
+            {
+                "name": "Root Deployer",
+                "type": "switch",
+                "button": {
+                    "color": "#ffff00",
+                    "text": "${switch}: ${switchOption}",
+                    "tooltip": "Click here to change the current option of that switch..."
+                },
+                "options": [
+                    {
+                        "name": "quack-macros",
+                        "targets": [ "quack" ],
+                        //"isDefault": true
+                    },
+                    {
+                        "name": "donda-macros",
+                        "targets": [ "donda" ],
+                        "isDefault": true
+                    }
+                ]
+            },
+            {
+                "type": "sftp",
+                "name": "quack",
+                "description": "quack:default root-macro",
+                "dir": "/home/tking/programs/root-macros",
+                "host": "kqxhc.phys.utk.edu",
+                "user": "tking",
+                "privateKey": "/home/setsuna/.ssh/quack"
+            },
+            {
+                "type": "sftp",
+                "name": "donda",
+                "description": "donda:default root-macro",
+                "dir": "/home/tking/programs/root-macros",
+                "host": "donda.phys.utk.edu",
+                "user": "tking",
+                "privateKey": "/home/setsuna/.ssh/donda"
+            }
+        ]
+    },
 }
