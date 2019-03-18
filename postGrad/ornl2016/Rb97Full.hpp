@@ -57,6 +57,7 @@ class Rb97Full : public TSelector {
     string outputFilePrefix;
     Double_t subBinning;
     Int_t maxProj_;
+    map<Int_t,pair<Double_t,Double_t>> cloverCals;
     
     Int_t cnt;
     Int_t fcnt;
