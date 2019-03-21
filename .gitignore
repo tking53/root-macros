@@ -12,6 +12,8 @@
 *.layout
 *#*
 
+.vscode/ipch
+
 #Documentation directories and files
 html/
 latex/
