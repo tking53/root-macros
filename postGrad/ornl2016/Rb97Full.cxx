@@ -35,11 +35,6 @@ void Rb97Full::Begin(TTree * /*tree*/) {
 
     TString option = GetOption();
     outputFilePrefix = "Rb97Full_output";
-
-    cloverCals.emplace(0, make_pair(0.340173, -0.115387));
-    cloverCals.emplace(1, make_pair(0.346233, -0.743541));
-    cloverCals.emplace(2, make_pair(0.329557, -0.235071));
-    cloverCals.emplace(3, make_pair(0.367216, -0.223755));
 }
 
 void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
@@ -50,6 +45,18 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     cout << "Slave Start" << endl;
 
     TString option = GetOption();
+
+    //load clover calibrations from 3/13/19 ish, these are tests. once finalized they will be moved to paass' xml
+    // cloverCals.emplace(0, make_pair(0.340173, -0.115387));
+    // cloverCals.emplace(1, make_pair(0.346233, -0.743541));
+    // cloverCals.emplace(2, make_pair(0.329557, -0.235071));
+    // cloverCals.emplace(3, make_pair(0.367216, -0.223755));
+
+    //load clover calibrations no 40K in regress
+    cloverCals.emplace(0, make_pair(0.340175, -0.081255));
+    cloverCals.emplace(1, make_pair(0.346237, -0.683431));
+    cloverCals.emplace(2, make_pair(0.329561, -0.158131));
+    cloverCals.emplace(3, make_pair(0.367221, -0.150671));
 
     Double_t CloverBins = 6000;
     Double_t HagBins = 8000;
@@ -75,21 +82,27 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
         ss << "cloverChan_" << i;
         s << "Clover Channel #" << i;
         sss << "g_e_dt_" << i;
-        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), CloverBins * 4, 0, CloverBins));
+        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), CloverBins, 0, CloverBins));
         s << "Decay Curves";
-        GammaArray->Add(new TH2F(sss.str().c_str(), s.str().c_str(), CloverBins * 4, 0, CloverBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+        GammaArray->Add(new TH2F(sss.str().c_str(), s.str().c_str(), CloverBins, 0, CloverBins, totalCycleTimeBins, 0, totalCycleTimeBins));
         g << "corrCloverChan_" << i;
         gg << "Corrected Clover Channel #" << i;
-        GammaArray->Add(new TH1D(g.str().c_str(), gg.str().c_str(), CloverBins * 4, 0, CloverBins));
+        GammaArray->Add(new TH1D(g.str().c_str(), gg.str().c_str(), CloverBins, 0, CloverBins));
     }
 
     cout << "Creating smallHag" << endl;
     //Create the smallHag histos
     for (auto i = 0; i < 16; i++) {
-        stringstream ss, s;
+        stringstream ss, s, sss, rs, rss;
         ss << "smaHag_" << i;
         s << "Hargid Channel #" << i;
-        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), HagBins * 2, 0, HagBins));
+        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), HagBins, 0, HagBins));
+        sss << "h_e_dt_" << i;
+        s << " Decay Curves";
+        GammaArray->Add(new TH2F(sss.str().c_str(), s.str().c_str(), HagBins, 0, HagBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+        rss << "h_re_dt_" << i;
+        rs << "Raw Hagrid# " << i << " Energy";
+        GammaArray->Add(new TH2D(rss.str().c_str(), rs.str().c_str(), 32000, 0, 32000, totalCycleTimeBins, 0, totalCycleTimeBins));
     }
 
     cout << "Creating nai" << endl;
@@ -103,14 +116,14 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
 
     cout << "Creating Time Plots" << endl;
     //Clover time plots
-    GammaArray->Add(new TH1F("g_e_total", "Clover Totals", CloverBins * 4, 0, CloverBins));
-    GammaArray->Add(new TH2F("g_e_dt", "Decay curves for clover", CloverBins * 4, 0, CloverBins, totalCycleTimeBins, 0, totalCycleTimeBins));
-    GammaArray->Add(new TH2F("g_e_cycle", "Clover Energy vs Cycle", CloverBins * 4, 0, CloverBins, 500, 0, 500));
+    GammaArray->Add(new TH1F("g_e_total", "Clover Totals", CloverBins, 0, CloverBins));
+    GammaArray->Add(new TH2F("g_e_dt", "Decay curves for clover", CloverBins, 0, CloverBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+    GammaArray->Add(new TH2F("g_e_cycle", "Clover Energy vs Cycle", CloverBins, 0, CloverBins, 500, 0, 500));
 
     //Hag time plots
-    GammaArray->Add(new TH1F("h_e_total", "HAGRiD Totals", HagBins * 2, 0, HagBins));
-    GammaArray->Add(new TH2F("h_e_dt", "Decay curves for HAGRiD", HagBins * 2, 0, HagBins, totalCycleTimeBins, 0, totalCycleTimeBins));
-    GammaArray->Add(new TH2F("h_e_cycle", "HAGRiD Energy vs Cycle", HagBins * 2, 0, HagBins, 500, 0, 500));
+    GammaArray->Add(new TH1F("h_e_total", "HAGRiD Totals", HagBins, 0, HagBins));
+    GammaArray->Add(new TH2F("h_e_dt", "Decay curves for HAGRiD", HagBins, 0, HagBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+    GammaArray->Add(new TH2F("h_e_cycle", "HAGRiD Energy vs Cycle", HagBins, 0, HagBins, 500, 0, 500));
 
     //NaI time plots
     GammaArray->Add(new TH1F("n_e_total", "NaI Totals", NaiBins, 0, NaiBins));
@@ -190,9 +203,9 @@ Bool_t Rb97Full::Process(Long64_t entry) {
     LastCT = logic.At(0).lastTapeCycleStartTime;  // ns
     currentCycleNum = logic.At(0).cycleNum;
 
-    //get sizes of vectors 
+    //get sizes of vectors
     Bool_t cloEvt, gsEvt, vanEvt;
-    cloEvt=gsEvt=vanEvt=false;
+    cloEvt = gsEvt = vanEvt = false;
     if (clover.GetSize() != 0) {
         cloEvt = true;
     }
@@ -203,22 +216,25 @@ Bool_t Rb97Full::Process(Long64_t entry) {
         vanEvt = true;
     }
 
-    
     //clover only
     if (cloEvt) {
         for (auto itC = clover.begin(); itC != clover.end(); itC++) {
             Double_t cEnergy_ = itC->energy;
-            Double_t cTime_ = itC->time * DSPclockInSeconds * 1e9;  //ns after convert
+            Double_t cRawEnergy = itC->rawEnergy;
+            Double_t cTime_ = itC->time ;  //ns
             Double_t dt = (cTime_ - LastCT) * timeBinning_;         // binned time
-            
+
             Double_t slope = cloverCals.find(itC->detNum)->second.first;
             Double_t inter = cloverCals.find(itC->detNum)->second.second;
-            Double_t cCorEnergy_ = slope * itC->rawEnergy + inter;
-            
+            Double_t cCorEnergy_;
+            cCorEnergy_ = slope * itC->rawEnergy + inter;
+            // cCorEnergy_ = itC->rawEnergy;
+            // cout<<"cCorEnergy= "<<cCorEnergy_<<endl;
             stringstream s, ss, sss;
             s << "cloverChan_" << itC->detNum;
             ss << "g_e_dt_" << itC->detNum;
             sss << "corrCloverChan_" << itC->detNum;
+            //cout<< "SSS= "<<sss.str().c_str()<<"   cCorEnergy_= "<<cCorEnergy_<<endl;
             ((TH1 *)GammaArray->FindObject(s.str().c_str()))->Fill(cEnergy_);
             ((TH1 *)GammaArray->FindObject(sss.str().c_str()))->Fill(cCorEnergy_);
             ((TH1 *)GammaArray->FindObject("g_e_total"))->Fill(cEnergy_);
@@ -237,17 +253,18 @@ Bool_t Rb97Full::Process(Long64_t entry) {
             }
         }
     }
-   
+
     //hag and nai
     if (gsEvt) {
         for (auto itGS = gamscint.begin(); itGS != gamscint.end(); itGS++) {
             Double_t GSEnergy_ = itGS->energy;
-            Double_t GSTime_ = itGS->time * DSPclockInSeconds * 1e9;  //ns after convert
-            Double_t dt = (GSTime_ - LastCT) * timeBinning_;          // binned time
+            Double_t GSRawEnergy_ = itGS->rawEnergy;
+            Double_t GSTime_ = itGS->time;                    //ns
+            Double_t dt = (GSTime_ - LastCT) * timeBinning_;  // binned time
             string type = itGS->subtype.Data();
             string sst = itGS->group.Data();
             string timeType, singleType;
-            stringstream S, SET, SEDT, SEC, SS;
+            stringstream S, SET, SEDT, SEC, SS, SEDTS, HREDT;
             Bool_t hagrid = false;
             if (type == "nai" && itGS->detNum < 4) {
                 continue;
@@ -268,12 +285,14 @@ Bool_t Rb97Full::Process(Long64_t entry) {
             SET << timeType << "_e_total";
             SEDT << timeType << "_e_dt";
             SEC << timeType << "_e_cycle";
-           
+            SEDTS << SEDT.str().c_str() << "_" << itGS->detNum;
             ((TH1 *)GammaArray->FindObject(S.str().c_str()))->Fill(GSEnergy_);
             ((TH1 *)GammaArray->FindObject(SET.str().c_str()))->Fill(GSEnergy_);
             ((TH2 *)GammaArray->FindObject(SEDT.str().c_str()))->Fill(GSEnergy_, dt);
             ((TH2 *)GammaArray->FindObject(SEC.str().c_str()))->Fill(GSEnergy_, currentCycleNum);
-            
+            // if (LastCT > 0){
+            //     cout<<"DT= "<<dt<< endl << "LastCt(ns)= "<<LastCT <<endl <<"hagTime= "<<GSTime_ <<endl<<endl;
+            // }
             //sliced
             if (hagrid) {
                 for (auto ind = 0; ind < maxProj_; ind++) {
@@ -283,11 +302,14 @@ Bool_t Rb97Full::Process(Long64_t entry) {
                         ((TH1 *)GammaArray->FindObject(SS.str().c_str()))->Fill(GSEnergy_);
                     }
                 }
+                ((TH2 *)GammaArray->FindObject(SEDTS.str().c_str()))->Fill(GSEnergy_, dt);
+                cout << "t" << endl;
+                HREDT << "h_re_dt_" << itGS->detNum;
+                ((TH2 *)GammaArray->FindObject(HREDT.str().c_str()))->Fill(GSRawEnergy_, dt);
             }
-            
         }
     }
-    
+
     //vandle
     if (vanEvt) {
         for (auto itV = vandle.begin(); itV != vandle.end(); itV++) {
