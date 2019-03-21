@@ -1,0 +1,3 @@
+[submodule "rinMacros"]
+	path = rinMacros
+	url = git@github.com:tking53/rootmacros.git
