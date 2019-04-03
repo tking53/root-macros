@@ -15,24 +15,20 @@ enum EColor kDarkCyan = (enum EColor)(kCyan + 2);
 vector<enum EColor> geCols = {kRed, kGreen, kBlue, kDarkCyan};
 
 vector<enum EColor> hagCols = {
-    kBlue,(enum EColor)(kBlue+2),
-    kRed,(enum EColor)(kRed+1),(enum EColor)(kRed+2), (enum EColor)(kRed+3),(enum EColor)(kRed-2),(enum EColor)(kRed-7),
-    (enum EColor)(kMagenta+3),(enum EColor)(kMagenta-2),
-    kGreen,(enum EColor)(kGreen+2),(enum EColor)(kGreen+3),(enum EColor)(kGreen+4),(enum EColor)(kGreen-2),(enum EColor)(kGreen-6)
-};
+    kBlue, (enum EColor)(kBlue + 2),
+    kRed, (enum EColor)(kRed + 1), (enum EColor)(kRed + 2), (enum EColor)(kRed + 3), (enum EColor)(kRed - 2), (enum EColor)(kRed - 7),
+    (enum EColor)(kMagenta + 3), (enum EColor)(kMagenta - 2),
+    kGreen, (enum EColor)(kGreen + 2), (enum EColor)(kGreen + 3), (enum EColor)(kGreen + 4), (enum EColor)(kGreen - 2), (enum EColor)(kGreen - 6)};
 
-void CloverIndiviuals(Int_t lowR = 0, Int_t highR = 8000) {
-    //if (gPad == 0 || gPad == NULL){
-    //TCanvas* c1 =0 ;
-
+void CloverIndiviuals(string prefix = "g_E_", Int_t lowR = 0, Int_t highR = 8000) {
     auto c1 = new TCanvas("c1", "c1", 800, 600);
     stringstream ss;
     for (Int_t i = 0; i < 4; i++) {
         stringstream ss;
-        ss << "corrCloverChan_" << i;
+        ss << prefix.c_str() << i;
         TH2* hh = ((TH2*)gFile->Get(ss.str().c_str()));
         hh->SetLineColor(geCols.at(i));
-        hh->GetXaxis()->SetRangeUser(lowR,highR);
+        hh->GetXaxis()->SetRangeUser(lowR, highR);
         if (i == 0) {
             hh->Draw("");
         } else {
@@ -41,18 +37,15 @@ void CloverIndiviuals(Int_t lowR = 0, Int_t highR = 8000) {
     }
 }
 
-void HagIndiviuals(Int_t lowR = 0, Int_t highR = 8000) {
-    //if (gPad == 0 || gPad == NULL){
-    //TCanvas* c1 =0 ;
-
+void HagIndiviuals(string prefix = "h_E_", Int_t lowR = 0, Int_t highR = 8000) {
     auto c2 = new TCanvas("c2", "c2", 800, 600);
     stringstream ss;
     for (Int_t i = 0; i < 16; i++) {
         stringstream ss;
-        ss << "smaHag_" << i;
+        ss << prefix.c_str() << i;
         TH2* hh = ((TH2*)gFile->Get(ss.str().c_str()));
         hh->SetLineColor(hagCols.at(i));
-        hh->GetXaxis()->SetRangeUser(lowR,highR);
+        hh->GetXaxis()->SetRangeUser(lowR, highR);
         if (i == 0) {
             hh->Draw("");
         } else {
