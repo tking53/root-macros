@@ -14,7 +14,7 @@
                 "${env:ROOTSYSFallback}/include/**"
             ],
             "browse": {
-                "limitSymbolsToIncludedHeaders": true,
+                "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": "",
                 "path": [
                     "${env:ROOTSYS}/include/**",
@@ -27,8 +27,8 @@
                 ]
             },
             "defines": [],
-            "intelliSenseMode": "clang-x64",
-            "compilerPath": "/usr/bin/clang",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
             "cppStandard": "c++11"            
         }
     ],
