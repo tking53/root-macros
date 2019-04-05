@@ -17,6 +17,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include "ProcessorRootStruc.hpp"
+#include <TApplication.h>
 
 // Reader Headers
 #include <TTreeReader.h>
@@ -44,7 +45,7 @@ class Rb97Full : public TSelector {
     TTreeReaderArray<processor_struct::CLOVERS> clover = {fReader, "clover_vec_"};
     TTreeReaderArray<processor_struct::VANDLES> vandle = {fReader, "vandle_vec_"};
     TTreeReaderArray<processor_struct::LOGIC> logic = {fReader, "logic_vec_"};
-    TTreeReaderArray<processor_struct::DOUBLEBETA> doublebeta = {fReader, "doublebeta_vec_"};
+    TTreeReaderArray<processor_struct::DOUBLEBETA> beta = {fReader, "doublebeta_vec_"};
 
     //declares
     TObjArray *GammaArray, *VandleArray;
@@ -58,11 +59,15 @@ class Rb97Full : public TSelector {
     Double_t subBinning;
     Int_t maxProj_;
     map<Int_t,pair<Double_t,Double_t>> cloverCals;
+    map<Int_t,vector<Double_t>> hagCals;
     
     Int_t cnt;
     Int_t fcnt;
     Int_t entTotal_;
     Bool_t isChain;
+
+    Double_t BinShift;
+    Double_t gbdtBin;
 
     Rb97Full(TTree * /*tree*/ = 0) {}
     virtual ~Rb97Full() {}
