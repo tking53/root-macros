@@ -10,7 +10,7 @@
 #include "TH2.h"
 #include "TMath.h"
 #include "TSpectrum.h"
-pair<Int_t, Int_t> projSlow = {350, 800}, projFast = {0, 300}, numNai = {4, 9}, numHag = {0, 15}, numScint;
+pair<Int_t, Int_t> projSlow = {350, 800}, projFast = {0, 300}, numNai = {4, 9}, numHag = {0, 15}, numScint, numGe={0,3};
 
 vector<TH2*> inputs;
 vector<vector<TH1*>> projections;
@@ -24,6 +24,8 @@ vector<vector<TH1*>> ScintProjector(TFile* F, string prefix = "h", Bool_t raw = 
         numScint = numNai;
     } else if (prefix == "h") {
         numScint = numHag;
+    } else if (prefix == "g") {
+        numScint = numGe;
     } else {
         cout << "Unknown prefix" << endl;
         return ProjTemp;
