@@ -12,12 +12,11 @@
 #include <TSelector.h>
 #include <TSystem.h>
 
-
 // Data Input headers
+#include <TApplication.h>
 #include <TChain.h>
 #include <TFile.h>
 #include "ProcessorRootStruc.hpp"
-#include <TApplication.h>
 
 // Reader Headers
 #include <TTreeReader.h>
@@ -58,9 +57,9 @@ class Rb97Full : public TSelector {
     string outputFilePrefix;
     Double_t subBinning;
     Int_t maxProj_;
-    map<Int_t,pair<Double_t,Double_t>> cloverCals;
-    map<Int_t,vector<Double_t>> hagCals;
-    
+    map<Int_t, pair<Double_t, Double_t>> cloverCals;
+    map<Int_t, vector<Double_t>> hagCals;
+
     Int_t cnt;
     Int_t fcnt;
     Int_t entTotal_;
@@ -68,6 +67,11 @@ class Rb97Full : public TSelector {
 
     Double_t BinShift;
     Double_t gbdtBin;
+
+    Double_t Valid_CloverBetaTdiff;
+    Double_t Valid_HagBetaTdiff;
+    Double_t Valid_NaiBetaTdiff;
+    Double_t Valid_VandleTdiff;
 
     Rb97Full(TTree * /*tree*/ = 0) {}
     virtual ~Rb97Full() {}
@@ -84,7 +88,7 @@ class Rb97Full : public TSelector {
     virtual TList *GetOutputList() const { return fOutput; }
     virtual void SlaveTerminate();
     virtual void Terminate();
-    void AddToOutputList(TObjArray* iArray);
+    void AddToOutputList(TObjArray *iArray);
 
     ClassDef(Rb97Full, 0);
 };
