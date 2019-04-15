@@ -8,7 +8,7 @@
 #define Rb_97_Full_h
 
 // Root Headers needed
-#include </opt/root/6.14.06/include/TROOT.h>  //this is unknown why it needs the full path even though all the ROOT  headers are in the same folder
+#include <TROOT.h>  //this is unknown why it needs the full path even though all the ROOT  headers are in the same folder
 #include <TSelector.h>
 #include <TSystem.h>
 
@@ -25,7 +25,13 @@
 
 //Visualization headers
 #include <TH2.h>
+#include <TH3.h>
+#include <TH3F.h>
+#include <THnSparse.h>
 #include <TStyle.h>
+
+//Analysis headers
+#include <TCutG.h>
 
 // System STD Headers
 #include <sstream>
@@ -68,8 +74,10 @@ class Rb97Full : public TSelector {
     Double_t BinShift;
     Double_t gbdtBin;
 
-    Double_t Valid_CloverBetaTdiff;
-    Double_t Valid_HagBetaTdiff;
+    TCutG *valid_CBdT;
+
+    vector<pair<Double_t,Double_t>> Valid_CloverBetaTdiff; //<low energy L,H >,<mid energy L , H>, <high energy L,H> in {0,500},{501,1000},{1001, end}
+    Double_t Valid_HagHRBetaTdiff, Valid_HagLRBetaTdiff;
     Double_t Valid_NaiBetaTdiff;
     Double_t Valid_VandleTdiff;
 
