@@ -44,30 +44,27 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
 
     cout << "Slave Start" << endl;
 
-    valid_CBdT = new TCutG("clover_beta_tdiff", 20);
-    valid_CBdT->SetVarX("Clover Energy vs Clover-Beta dt");
-    valid_CBdT->SetVarY("");
-    valid_CBdT->SetTitle("Graph");
-    valid_CBdT->SetFillStyle(1000);
-    valid_CBdT->SetPoint(0, 67.2575, 935.835);
-    valid_CBdT->SetPoint(1, 125.912, 691.18);
-    valid_CBdT->SetPoint(2, 297.967, 512.45);
-    valid_CBdT->SetPoint(3, 599.061, 417.225);
-    valid_CBdT->SetPoint(4, 1920.75, 348.37);
-    valid_CBdT->SetPoint(5, 3582.64, 314.675);
-    valid_CBdT->SetPoint(6, 5549.53, 291.235);
-    valid_CBdT->SetPoint(7, 5690.3, 232.635);
-    valid_CBdT->SetPoint(8, 5338.37, 179.895);
-    valid_CBdT->SetPoint(9, 3402.76, 200.405);
-    valid_CBdT->SetPoint(10, 1005.74, 200.405);
-    valid_CBdT->SetPoint(11, 638.165, 204.8);
-    valid_CBdT->SetPoint(12, 137.643, 247.285);
-    valid_CBdT->SetPoint(13, 55.5265, 399.645);
-    valid_CBdT->SetPoint(14, 32.0646, 595.955);
-    valid_CBdT->SetPoint(15, 32.0646, 921.185);
-    valid_CBdT->SetPoint(16, 67.2575, 927.045);
-
     TString option = GetOption();
+
+    //Build TCuts
+    // valid_CBdT->SetVarX("Clover Energy");
+    // valid_CBdT->SetVarY("Clover-Beta dt");
+    // valid_CBdT->SetTitle("Graph");
+    // valid_CBdT->SetFillStyle(1000);
+    // nGinV->SetVarX("Tof");
+    // nGinV->SetVarY("QDC");
+    // nGinV->SetTitle("Graph");
+    // nGinV->SetFillStyle(1000);
+
+    nGinV = new TCutG("VTQ_fullQ", 12);
+    for (Int_t it = 0; it < VandleTCuts::VTQ_fullQ_vec.size(); it++) {
+        nGinV->SetPoint(it, VandleTCuts::VTQ_fullQ_vec.at(it).first, VandleTCuts::VTQ_fullQ_vec.at(it).second);
+    }
+
+    valid_CBdT = new TCutG("clover_beta_tdiff", 17);
+    for (Int_t it = 0; it < VandleTCuts::CloBetaTDiff_cut.size(); it++) {
+        valid_CBdT->SetPoint(it, VandleTCuts::CloBetaTDiff_cut.at(it).first, VandleTCuts::CloBetaTDiff_cut.at(it).second);
+    }
 
     //global things
     gbdtBin = 1;                                                   // gamma beta dT Bin factor
@@ -129,6 +126,7 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
 
     GammaArray->Add(new TH1F("g_e_total", "Clover Totals", CloverBins, 0, CloverBins));
     GammaArray->Add(new TH2F("g_e_dt_cut", "Clover Totals in tdiff tcut vs time in cycle", CloverBins, 0, CloverBins, DT_bins, 0, DT_bins));
+    GammaArray->Add(new TH2F("g_e_N_dt", "Clover energy with tdiff, and N gate vs DT ", CloverBins, 0, CloverBins, DT_bins, 0, DT_bins));
     GammaArray->Add(new TH2F("g_e_dt", "Decay curves for clover", CloverBins, 0, CloverBins, totalCycleTimeBins, 0, totalCycleTimeBins));
     GammaArray->Add(new TH2F("g_e_cycle", "Clover Energy vs Cycle", CloverBins, 0, CloverBins, 500, 0, 500));
 
@@ -227,11 +225,17 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     // }
 
     //----------------------------------------------------------------------------------------------------------------
-    //3Ds
+    //"3Ds"
+    // Double_t VarBins[1501];
+    // for (Int_t it = 0; it < 1500; it++) {
+    //     VarBins[it] = 243432e-9 * pow(it, 2) + -11635843e-9 * it + 0.736628549;  //from Xu
+    // }
 
-    //VandleArray->Add( new TH3F("v_t_q_dt", "Vandle Tof vs QDC vs Time in Cycle", 1500, 0, 1500, 4000, 0, 12000, 700, 0, 700));
+    // VandleArray->Add(new TH1F("v_vt", "Vandle Tof (vari bin) ", 1501, VarBins));
 
     VandleArray->Add(new THnSparseF("v_t_q_dt", "Vandle Tof vs QDC vs Time in Cycle", 3, new Int_t[3]{1500, 12000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 12000, static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("v_ct_q_dt", "Vandle corTof vs QDC vs Time in Cycle", 3, new Int_t[3]{1500, 32000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 32000, static_cast<Double_t>(totalCycleTimeBins)}));
 
     VandleArray->Add(new THnSparseF("v_t_bn_dt", "Vandle Tof vs Bar Num vs Time in Cycle", 3, new Int_t[3]{1500, 43, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 43, static_cast<Double_t>(totalCycleTimeBins)}));
 
@@ -471,6 +475,7 @@ Bool_t Rb97Full::Process(Long64_t entry) {
 
     for (auto itV = vandle.begin(); itV != vandle.end(); itV++) {
         Double_t tof = itV->tof;
+        Double_t cortof = itV->corTof;
         Double_t qdc = itV->qdc;
         Double_t tdiff = itV->tdiff;
         Double_t barnum = itV->barNum;
@@ -479,6 +484,7 @@ Bool_t Rb97Full::Process(Long64_t entry) {
         }
         Double_t curTime = (itV->sTime - LastCT) * timeBinning_;
         //no tape cut
+        // ((TH1 *)VandleArray->FindObject("v_vt"))->Fill(tof);
         ((TH2 *)VandleArray->FindObject("t_q_ug"))->Fill(tof, qdc);
         ((TH2 *)VandleArray->FindObject("t_bn"))->Fill(tof, barnum);
         ((TH2 *)VandleArray->FindObject("bn_td"))->Fill(barnum, tdiff);
@@ -486,19 +492,26 @@ Bool_t Rb97Full::Process(Long64_t entry) {
         if (abs(tdiff) <= Valid_VandleTdiff) {
             goodVanTdiff = true;
             ((THnSparse *)VandleArray->FindObject("v_t_q_dt"))->Fill(new Double_t[3]{tof, qdc, curTime});
-            ((THnSparse *)VandleArray->FindObject("v_t_bn_dt"))->Fill(new Double_t[3]{tof, barnum, curTime});
+            ((THnSparse *)VandleArray->FindObject("v_ct_q_dt"))->Fill(new Double_t[3]{cortof, qdc, curTime});
+            ((THnSparse *)VandleArray->FindObject("v_t_bn_dt"))->Fill(new Double_t[3]{cortof, barnum, curTime});
         }
 
-        if (goodVanTdiff) {
+        if (goodVanTdiff && nGinV->IsInside(tof, qdc)) {
             for (auto it = goodClovEn.begin(); it != goodClovEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("g_tof"))->Fill((*it), itV->tof);
-                ((THnSparse *)VandleArray->FindObject("g_t_q_dt"))->Fill(new Double_t[4]{(*it), tof, qdc, curTime});
+                ((TH2F *)GammaArray->FindObject("g_e_N_dt"))->Fill((*it), curTime);
+                // ((THnSparse *)VandleArray->FindObject("g_t_q_dt"))->Fill(new Double_t[4]{(*it), tof, qdc, curTime});
+            }
+        }
+        if (goodVanTdiff && nGinV->IsInside(tof, qdc)) {
+            for (auto it = goodClovEn.begin(); it != goodClovEn.end(); it++) {
+                ((TH2D *)VandleArray->FindObject("g_tof"))->Fill((*it), cortof);
+                ((THnSparse *)VandleArray->FindObject("g_t_q_dt"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
             }
             for (auto it = goodHagEn.begin(); it != goodHagEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("h_tof"))->Fill((*it), itV->tof);
+                ((TH2D *)VandleArray->FindObject("h_tof"))->Fill((*it), cortof);
             }
             for (auto it = goodNaiEn.begin(); it != goodNaiEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("n_tof"))->Fill((*it), itV->tof);
+                ((TH2D *)VandleArray->FindObject("n_tof"))->Fill((*it), cortof);
             }
         }
     }
