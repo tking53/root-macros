@@ -1,5 +1,5 @@
 {
-    "C_Cpp.intelliSenseEngineFallback": "Enabled",
+    "C_Cpp.intelliSenseEngineFallback": "Disabled",
     "deploy.reloaded": {
         "packages": [
             {
@@ -35,6 +35,11 @@
                         "name": "donda-macros",
                         "targets": [ "donda" ],
                         "isDefault": true
+                    },
+                    {
+                        "name": "veda-macros",
+                        "targets": [ "veda" ],
+                        // "isDefault": true
                     }
                 ]
             },
@@ -55,7 +60,21 @@
                 "host": "donda.phys.utk.edu",
                 "user": "tking",
                 "privateKey": "/home/setsuna/.ssh/donda"
+            },
+            {
+                "type": "sftp",
+                "name": "veda",
+                "description": "veda:default root-macro",
+                "dir": "/home/hanayo/programs/root-macros",
+                "host": "veda.desktops.utk.edu",
+                "user": "hanayo",
+                "privateKey": "/home/setsuna/.ssh/keyPairs/veda",
+                "askForPrivateKeyPassphrase": "true"
             }
         ]
     },
+    "files.associations": {
+        "iomanip": "cpp",
+        "Rb97Full.C": "cpp"
+    }
 }
