@@ -73,10 +73,10 @@ class Rb97Full : public TSelector {
     Bool_t isChain;
 
     Double_t BinShift;
+    Double_t labrHRBshift;
     Double_t gbdtBin;
 
-    TCutG *valid_CBdT;
-    TCutG *nGinV;
+    TCutG* valid_CBdT, nGinV, valid_HHRBdT, valid_NBdT;
 
     vector<pair<Double_t,Double_t>> Valid_CloverBetaTdiff; //<low energy L,H >,<mid energy L , H>, <high energy L,H> in {0,500},{501,1000},{1001, end}
     Double_t Valid_HagHRBetaTdiff, Valid_HagLRBetaTdiff;

@@ -57,18 +57,28 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     // nGinV->SetFillStyle(1000);
 
     nGinV = new TCutG("VTQ_fullQ", 12);
-    for (Int_t it = 0; it < VandleTCuts::VTQ_fullQ_vec.size(); it++) {
+    for (UInt_t it = 0; it < VandleTCuts::VTQ_fullQ_vec.size(); it++) {
         nGinV->SetPoint(it, VandleTCuts::VTQ_fullQ_vec.at(it).first, VandleTCuts::VTQ_fullQ_vec.at(it).second);
     }
 
     valid_CBdT = new TCutG("clover_beta_tdiff", 17);
-    for (Int_t it = 0; it < VandleTCuts::CloBetaTDiff_cut.size(); it++) {
+    for (UInt_t it = 0; it < VandleTCuts::CloBetaTDiff_cut.size(); it++) {
         valid_CBdT->SetPoint(it, VandleTCuts::CloBetaTDiff_cut.at(it).first, VandleTCuts::CloBetaTDiff_cut.at(it).second);
     }
 
+    valid_HHRBdT = new TCutG("Hag_HRB_dt", 22);
+    for (UInt_t it = 0; it < VandleTCuts::HagHRBetaDT.size(); it++) {
+        valid_HHRBdT->SetPoint(it, VandleTCuts::HagHRBetaDT.at(it).first, VandleTCuts::HagHRBetaDT.at(it).second);
+    }
+    valid_NBdT = new TCutG("Nai_B_dt", 22);
+    for (UInt_t it = 0; it < VandleTCuts::NaiBetaDT.size(); it++) {
+        valid_NBdT->SetPoint(it, VandleTCuts::NaiBetaDT.at(it).first, VandleTCuts::NaiBetaDT.at(it).second);
+    }
+
     //global things
-    gbdtBin = 1;                                                   // gamma beta dT Bin factor
-    BinShift = 200;                                                // offset for Gamma Beta dT
+    gbdtBin = 1;     // gamma beta dT Bin factor
+    BinShift = 200;  // offset for Gamma Beta dT
+    labrHRBshift = 400;
     Valid_CloverBetaTdiff = {{250, 600}, {225, 400}, {225, 330}};  //max tdiff (including shift) between clover and beta to be good
     Valid_HagLRBetaTdiff = 300;                                    //max tdiff (including shift) between Hag and beta to be good
     Valid_HagHRBetaTdiff = 300;                                    //max tdiff (including shift) between Hag and HR beta to be good
@@ -76,6 +86,7 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     Valid_VandleTdiff = 15;                                        // +/- tdiff Vandle bar to be good
 
     //Bins for His
+    Int_t TotalEnergyBins = 8000;
     Int_t CloverBins = 6000;
     Int_t HagBins = 8000;
     Int_t NaiBins = 8000;
@@ -85,6 +96,7 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     Int_t msPerBin = 10;
     Int_t RawEnergyBins = 32000;
     Int_t DT_bins = 2000 / gbdtBin;
+    Int_t binNs = 2;
 
     timeBinning_ = msConvert / msPerBin;  //ns->desired time binning (1e-6 == 1 ms bins)
 
@@ -101,26 +113,26 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     VandleArray->Add(new TH2F("beta_multi", "Beta Multiplicy 0=LR 1=HR ", 50, 0, 50, 3, 0, 3));
 
     //-------------------------------------------------------------------------------------------------------
-    cout << "Creating clover" << endl;
-    //Create the clover histos
-    for (auto i = 0; i < 4; i++) {
-        stringstream ss, s;
-        ss << "g_E_" << i;
-        s << "Clover Channel #" << i;
-        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), CloverBins, 0, CloverBins));
+    // cout << "Creating clover" << endl;
+    // //Create the clover histos
+    // for (auto i = 0; i < 4; i++) {
+    //     stringstream ss, s;
+    //     ss << "g_E_" << i;
+    //     s << "Clover Channel #" << i;
+    //     GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), CloverBins, 0, CloverBins));
 
-        // s.str("");
-        // ss.str("");
-        // s << "RAW: Clover Channel #" << i << " Decay Curves";
-        // ss << "g_re_dt_" << i;
-        // GammaArray->Add(new TH2F(ss.str().c_str(), s.str().c_str(), RawEnergyBins, 0, RawEnergyBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+    //     // s.str("");
+    //     // ss.str("");
+    //     // s << "RAW: Clover Channel #" << i << " Decay Curves";
+    //     // ss << "g_re_dt_" << i;
+    //     // GammaArray->Add(new TH2F(ss.str().c_str(), s.str().c_str(), RawEnergyBins, 0, RawEnergyBins, totalCycleTimeBins, 0, totalCycleTimeBins));
 
-        // s.str("");
-        // ss.str("");
-        // s << "Cal: Clover Channel #" << i << " Decay Curves";
-        // ss << "g_e_dt_" << i;
-        // GammaArray->Add(new TH2F(ss.str().c_str(), s.str().c_str(), RawEnergyBins, 0, RawEnergyBins, totalCycleTimeBins, 0, totalCycleTimeBins));
-    }
+    //     // s.str("");
+    //     // ss.str("");
+    //     // s << "Cal: Clover Channel #" << i << " Decay Curves";
+    //     // ss << "g_e_dt_" << i;
+    //     // GammaArray->Add(new TH2F(ss.str().c_str(), s.str().c_str(), RawEnergyBins, 0, RawEnergyBins, totalCycleTimeBins, 0, totalCycleTimeBins));
+    // }
     //Clover time plots
     GammaArray->Add(new TH1D("g_e_BG", "Clover Totals: Beta Gated", CloverBins, 0, CloverBins));
 
@@ -135,14 +147,14 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     GammaArray->Add(new TH2F("g_e_b_dt_cut", "CUT CHECK:Clover Energy vs Clover-Beta dt", CloverBins, 0, CloverBins, DT_bins, 0, DT_bins));
 
     //-------------------------------------------------------------------------------------------------------
-    cout << "Creating smallHag" << endl;
-    //Create the smallHag histos
-    for (auto i = 0; i < 16; i++) {
-        stringstream ss, s;
-        ss << "h_E_" << i;
-        s << "Hargid Channel #" << i;
-        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), HagBins, 0, HagBins));
-    }
+    // cout << "Creating smallHag" << endl;
+    // //Create the smallHag histos
+    // for (auto i = 0; i < 16; i++) {
+    //     stringstream ss, s;
+    //     ss << "h_E_" << i;
+    //     s << "Hargid Channel #" << i;
+    //     GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), HagBins, 0, HagBins));
+    // }
 
     //Hag time plots
     GammaArray->Add(new TH1D("h_e_BG", "LaBr Totals: Beta Gated", HagBins, 0, HagBins));
@@ -153,18 +165,19 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     GammaArray->Add(new TH2F("h_e_b_dt", "LaBr Energy vs LaBr-Beta dt", HagBins, 0, HagBins, DT_bins, 0, DT_bins));
 
     GammaArray->Add(new TH2F("h_e_hrb_dt", "LaBr Energy vs LaBr- high res Beta dt", HagBins, 0, HagBins, DT_bins, 0, DT_bins));
+    GammaArray->Add(new TH2F("h_hrb_det", "LaBr- high res Beta dt vs gs num", 2 * DT_bins, -DT_bins, DT_bins, 20, 0, 20));
 
     GammaArray->Add(new TH2F("h_num_b_dt", "LaBr DetNum vs LaBr-Beta dt", 20, 0, 20, DT_bins, 0, DT_bins));
 
     //-------------------------------------------------------------------------------------------------------
-    cout << "Creating nai" << endl;
-    //Create the nai histos; only doing nai>3 (middle and top layers) adjusting numbering for clarity
-    for (auto i = 4; i < 10; i++) {
-        stringstream ss, s;
-        ss << "n_E_" << i;
-        s << "NaI Channel #" << i;
-        GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), NaiBins, 0, NaiBins));
-    }
+    // cout << "Creating nai" << endl;
+    // //Create the nai histos; only doing nai>3 (middle and top layers) adjusting numbering for clarity
+    // for (auto i = 4; i < 10; i++) {
+    //     stringstream ss, s;
+    //     ss << "n_E_" << i;
+    //     s << "NaI Channel #" << i;
+    //     GammaArray->Add(new TH1D(ss.str().c_str(), s.str().c_str(), NaiBins, 0, NaiBins));
+    // }
 
     //NaI time plots
     GammaArray->Add(new TH1D("n_e_BG", "Nai Totals: Beta Gated", NaiBins, 0, NaiBins));
@@ -176,16 +189,20 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     GammaArray->Add(new TH2F("n_num_b_dt", "Nai DetNum vs Nai-Beta dt", 20, 0, 20, DT_bins, 0, DT_bins));
 
     //-------------------------------------------------------------------------------------------------------
-    cout << "Creating Vandle and Slice plots" << endl;
+    cout << "Creating Vandle plots" << endl;
     //create the vandle histograms
     VandleArray->Add(new TH2F("t_q_ug", "ToF vs QDC Ungated", 2500, 0, 2500, 10000, 0, 10000));
     VandleArray->Add(new TH2F("t_bn", "Tof vs Bar Num", 2500, 0, 2500, 42, 0, 42));
     VandleArray->Add(new TH2F("bn_td", "Bar Num vs TDiff", 42, 0, 42, 2000, -1000, 1000));
 
+    VandleArray->Add(new TH2F("tE_q_ban", "tof Energy vs QDC in Bananna", 10000, 0, 10, 12000, 0, 12000));
+
     //------------------------------------------------------------------------------------------------------
     VandleArray->Add(new TH2F("g_tof", "Clover Energy vs Vandle Tof (with cuts on the appropriate TDIFF) ", CloverBins, 0, CloverBins, 2000, 0, 2000));
     VandleArray->Add(new TH2F("h_tof", "LaBr Energy vs Vandle Tof (with cuts on the appropriate TDIFF) ", HagBins, 0, HagBins, 2000, 0, 2000));
     VandleArray->Add(new TH2F("n_tof", "Nai Energy vs Vandle Tof (with cuts on the appropriate TDIFF) ", NaiBins, 0, NaiBins, 2000, 0, 2000));
+
+    VandleArray->Add(new TH2I("goodMulti", "Surviving Gamma Event multi (0=clover,1=hag,2=nai)", 5, 0, 5, 100, 0, 100));
 
     // //Make the gamma/vandle - tape cycle projections/histos
     // for (auto i = 0; i < maxProj_; i++) {
@@ -233,11 +250,15 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
 
     // VandleArray->Add(new TH1F("v_vt", "Vandle Tof (vari bin) ", 1501, VarBins));
 
-    VandleArray->Add(new THnSparseF("v_t_q_dt", "Vandle Tof vs QDC vs Time in Cycle", 3, new Int_t[3]{1500, 12000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 12000, static_cast<Double_t>(totalCycleTimeBins)}));
+    // VandleArray->Add(new THnSparseF("v_t_q_dt", "Vandle Tof vs QDC vs Time in Cycle", 3, new Int_t[3]{VTofBins * binNs, 12000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(VTofBins), 12000, static_cast<Double_t>(totalCycleTimeBins)}));
 
-    VandleArray->Add(new THnSparseF("v_ct_q_dt", "Vandle corTof vs QDC vs Time in Cycle", 3, new Int_t[3]{1500, 32000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 32000, static_cast<Double_t>(totalCycleTimeBins)}));
+    // VandleArray->Add(new THnSparseF("v_t_bn_dt", "Vandle Tof vs Bar Num vs Time in Cycle", 3, new Int_t[3]{VTofBins * binNs, 43, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(VTofBins), 43, static_cast<Double_t>(totalCycleTimeBins)}));
 
-    VandleArray->Add(new THnSparseF("v_t_bn_dt", "Vandle Tof vs Bar Num vs Time in Cycle", 3, new Int_t[3]{1500, 43, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{1500, 43, static_cast<Double_t>(totalCycleTimeBins)}));
+    VandleArray->Add(new THnSparseF("v_ct_q_dt", "Vandle corTof vs QDC vs Time in Cycle (0.5ns/bin)", 3, new Int_t[3]{VTofBins * binNs, 32000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(VTofBins), 32000, static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("v_ct_q_dt_flash", "Vandle corTof vs QDC vs Time in Cycle zoom to gamma flash (100ps bins)", 3, new Int_t[3]{500, 32000, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{50, 32000, static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("v_ct_bn_dt", "Vandle corTof vs Bar Num vs Time in Cycle", 3, new Int_t[3]{VTofBins * binNs, 43, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(VTofBins), 43, static_cast<Double_t>(totalCycleTimeBins)}));
 
     GammaArray->Add(new THnSparseF("g_e_bdt_dt", "Clover Energy vs Clover-Beta dt vs Time in Cycle", 3, new Int_t[3]{CloverBins, DT_bins, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(DT_bins), static_cast<Double_t>(totalCycleTimeBins)}));
     GammaArray->Add(new THnSparseF("h_e_bdt_dt", "LaBr Energy vs LaBr-Beta dt vs Time in Cycle", 3, new Int_t[3]{HagBins, DT_bins, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(HagBins), static_cast<Double_t>(DT_bins), static_cast<Double_t>(totalCycleTimeBins)}));
@@ -245,7 +266,21 @@ void Rb97Full::SlaveBegin(TTree * /*PixTree*/) {
     GammaArray->Add(new THnSparseF("n_e_bdt_dt", "Nai Energy vs NaI-Beta dt vs Time in Cycle", 3, new Int_t[3]{NaiBins, DT_bins, totalCycleTimeBins}, new Double_t[3]{0, 0, 0}, new Double_t[3]{static_cast<Double_t>(NaiBins), static_cast<Double_t>(DT_bins), static_cast<Double_t>(totalCycleTimeBins)}));
 
     ///---------------VANDLE GAMMA HISTS-------------------------------------------
-    VandleArray->Add(new THnSparseF("g_t_q_dt", "Clover Energy vs Vandle Tof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{CloverBins, VTofBins, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+    VandleArray->Add(new THnSparseF("g_ct_q_dt", "Clover Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{CloverBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("h_ct_q_dt", "LaBr Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{HagBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(HagBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("n_ct_q_dt", "NaI Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{NaiBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(NaiBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("T_ct_q_dt", "Total Event Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{TotalEnergyBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(TotalEnergyBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("TG_ct_q_dt", "Total Event Good Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{TotalEnergyBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(TotalEnergyBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("Ban_g_ct_q_dt", "Clover Energy vs Vandle corTof vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{CloverBins, VTofBins * binNs, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(VTofBins), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("g_E_q_dt", "Clover Energy vs Vandle corTof(Energy converted) vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{CloverBins, 3500 * 2, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(3500), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
+
+    VandleArray->Add(new THnSparseF("h_E_q_dt", "LaBr Energy vs Vandle corTof(Energy converted) vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{CloverBins, 3500 * 2, VQdcBins, totalCycleTimeBins}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins), static_cast<Double_t>(3500), static_cast<Double_t>(VQdcBins), static_cast<Double_t>(totalCycleTimeBins)}));
 
     //Add the TObjArrays to the output list
     AddToOutputList(GammaArray);
@@ -324,6 +359,8 @@ Bool_t Rb97Full::Process(Long64_t entry) {
     ((TH2 *)VandleArray->FindObject("beta_multi"))->Fill(lowResBetaList.size(), 0);
     ((TH2 *)VandleArray->FindObject("beta_multi"))->Fill(highResBetaList.size(), 1);
 
+    Double_t evtEnTotal = 0;
+
     //clover only
     for (auto itC = clover.begin(); itC != clover.end(); itC++) {
         Double_t cEnergy_ = itC->energy;
@@ -331,10 +368,13 @@ Bool_t Rb97Full::Process(Long64_t entry) {
         Double_t cTime_ = itC->time;                     //ns
         Double_t dt = (cTime_ - LastCT) * timeBinning_;  // binned time
 
-        stringstream s, ss, gg;
-        s << "g_E_" << itC->detNum;
+        evtEnTotal += cEnergy_;  //sum all the energies
 
-        ((TH1 *)GammaArray->FindObject(s.str().c_str()))->Fill(cEnergy_);
+        // start generating the seeds for the histograms
+        stringstream s, ss, gg;
+        // s << "g_E_" << itC->detNum;  // single detect spectra
+
+        // ((TH1 *)GammaArray->FindObject(s.str().c_str()))->Fill(cEnergy_);
         ((TH1 *)GammaArray->FindObject("g_e_total"))->Fill(cEnergy_);
         ((TH2 *)GammaArray->FindObject("g_e_dt"))->Fill(cEnergy_, dt);
         ((TH2 *)GammaArray->FindObject("g_e_cycle"))->Fill(cEnergy_, currentCycleNum);
@@ -401,12 +441,15 @@ Bool_t Rb97Full::Process(Long64_t entry) {
             continue;
         }
 
-        S << shortType << "_E_" << itGS->detNum;
+        evtEnTotal += GSEnergy_;  // sum all the energies  (excluding the bad detectors like NaI < 4)
+
+        //make the string streams needed to dynamiclly find the right spectra
+        // S << shortType << "_E_" << itGS->detNum;
         SET << shortType << "_e_total";
         SEDT << shortType << "_e_dt";
         SEC << shortType << "_e_cycle";
 
-        ((TH1 *)GammaArray->FindObject(S.str().c_str()))->Fill(GSEnergy_);                     //Cal En: Single Det
+        // ((TH1 *)GammaArray->FindObject(S.str().c_str()))->Fill(GSEnergy_);                     //Cal En: Single Det
         ((TH1 *)GammaArray->FindObject(SET.str().c_str()))->Fill(GSEnergy_);                   //Cal En: type totals
         ((TH2 *)GammaArray->FindObject(SEDT.str().c_str()))->Fill(GSEnergy_, dt);              //Cal En: type total vs dt
         ((TH2 *)GammaArray->FindObject(SEC.str().c_str()))->Fill(GSEnergy_, currentCycleNum);  //Cal En: type total vs cycle num
@@ -421,9 +464,14 @@ Bool_t Rb97Full::Process(Long64_t entry) {
                         alignmentOffset = -200;
                     }
                     Double_t ScBdt = (GSTime_ + alignmentOffset) - itScB->second;
-                    if (ScBdt + Valid_HagHRBetaTdiff >= 0) {
-                        ((TH2 *)GammaArray->FindObject("h_e_hrb_dt"))->Fill(GSEnergy_, (ScBdt + Valid_HagHRBetaTdiff));
-                        ((THnSparse *)GammaArray->FindObject("h_e_hrbdt_dt"))->Fill(new Double_t[3]{GSEnergy_, (ScBdt + Valid_HagHRBetaTdiff), dt});
+                    ((TH1 *)GammaArray->FindObject("h_hrb_det"))->Fill(ScBdt + labrHRBshift, GSNum_);
+                    if (ScBdt + labrHRBshift >= 0) {
+                        ((TH2 *)GammaArray->FindObject("h_e_hrb_dt"))->Fill(GSEnergy_, (ScBdt + labrHRBshift));
+                        ((THnSparse *)GammaArray->FindObject("h_e_hrbdt_dt"))->Fill(new Double_t[3]{GSEnergy_, (ScBdt + labrHRBshift), dt});
+                    }
+                    if (valid_HHRBdT->IsInside(GSEnergy_, ScBdt + labrHRBshift)) {
+                        goodHagTdiff = true;
+                        goodHagEn.emplace_back(GSEnergy_);
                     }
                 }
             }
@@ -445,15 +493,21 @@ Bool_t Rb97Full::Process(Long64_t entry) {
                     alignmentOffset = 0;
                 }
                 Double_t ScBdt = (GSTime_ + alignmentOffset) - itScB->second;
+
+                if (nai && valid_NBdT->IsInside(GSEnergy_, (ScBdt + BinShift))) {
+                    goodNaiTdiff = true;
+                    goodNaiEn.emplace_back(GSEnergy_);
+                };
+
                 if (ScBdt + BinShift >= 0) {
-                    if (hagrid && (ScBdt + BinShift) <= Valid_HagLRBetaTdiff) {
-                        goodHagTdiff = true;
-                        goodHagEn.emplace_back(GSEnergy_);
-                    }
-                    if (nai && (ScBdt + BinShift) <= Valid_NaiBetaTdiff) {
-                        goodNaiTdiff = true;
-                        goodNaiEn.emplace_back(GSEnergy_);
-                    }
+                    // if (hagrid && (ScBdt + BinShift) <= Valid_HagLRBetaTdiff) {
+                    //     goodHagTdiff = true;
+                    //     goodHagEn.emplace_back(GSEnergy_);
+                    // }
+                    // if (nai && (ScBdt + BinShift) <= Valid_NaiBetaTdiff) {
+                    //     goodNaiTdiff = true;
+                    //     goodNaiEn.emplace_back(GSEnergy_);
+                    // }
 
                     //scint vs beta tdif
                     ((TH2 *)GammaArray->FindObject(sbdt.str().c_str()))->Fill(GSEnergy_, (ScBdt + BinShift) / gbdtBin);
@@ -470,7 +524,24 @@ Bool_t Rb97Full::Process(Long64_t entry) {
             }
         }
     }
+    ((TH2I *)VandleArray->FindObject("goodMulti"))->Fill(0.0, (Double_t)goodClovEn.size());
+    ((TH2I *)VandleArray->FindObject("goodMulti"))->Fill(1.0, (Double_t)goodHagEn.size());
+    ((TH2I *)VandleArray->FindObject("goodMulti"))->Fill(2.0, (Double_t)goodNaiEn.size());
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    //Total Gamma Stuf
+    Double_t GoodEnTotal = 0;
+    for (UInt_t it = 0; it < goodClovEn.size(); it++) {
+        GoodEnTotal += goodClovEn.at(it);
+    }
+    for (UInt_t it = 0; it < goodHagEn.size(); it++) {
+        GoodEnTotal += goodHagEn.at(it);
+    }
+    for (UInt_t it = 0; it < goodNaiEn.size(); it++) {
+        GoodEnTotal += goodNaiEn.at(it);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
     //vandle
 
     for (auto itV = vandle.begin(); itV != vandle.end(); itV++) {
@@ -486,33 +557,47 @@ Bool_t Rb97Full::Process(Long64_t entry) {
         //no tape cut
         // ((TH1 *)VandleArray->FindObject("v_vt"))->Fill(tof);
         ((TH2 *)VandleArray->FindObject("t_q_ug"))->Fill(tof, qdc);
-        ((TH2 *)VandleArray->FindObject("t_bn"))->Fill(tof, barnum);
         ((TH2 *)VandleArray->FindObject("bn_td"))->Fill(barnum, tdiff);
 
         if (abs(tdiff) <= Valid_VandleTdiff) {
             goodVanTdiff = true;
-            ((THnSparse *)VandleArray->FindObject("v_t_q_dt"))->Fill(new Double_t[3]{tof, qdc, curTime});
+            // ((THnSparse *)VandleArray->FindObject("v_t_q_dt"))->Fill(new Double_t[3]{tof, qdc, curTime});
             ((THnSparse *)VandleArray->FindObject("v_ct_q_dt"))->Fill(new Double_t[3]{cortof, qdc, curTime});
-            ((THnSparse *)VandleArray->FindObject("v_t_bn_dt"))->Fill(new Double_t[3]{cortof, barnum, curTime});
+            ((THnSparse *)VandleArray->FindObject("v_ct_bn_dt"))->Fill(new Double_t[3]{cortof, barnum, curTime});
+            if (cortof <= 100 && cortof >= 0) {
+                ((THnSparse *)VandleArray->FindObject("v_ct_q_dt_flash"))->Fill(new Double_t[3]{cortof, qdc, curTime});
+            }
         }
 
-        if (goodVanTdiff && nGinV->IsInside(tof, qdc)) {
+        if (goodVanTdiff) {
+            Double_t tof2En = 0.5 * 939.565378 * pow((100 / (cortof * 29.9792458)), 2);
             for (auto it = goodClovEn.begin(); it != goodClovEn.end(); it++) {
-                ((TH2F *)GammaArray->FindObject("g_e_N_dt"))->Fill((*it), curTime);
-                // ((THnSparse *)VandleArray->FindObject("g_t_q_dt"))->Fill(new Double_t[4]{(*it), tof, qdc, curTime});
-            }
-        }
-        if (goodVanTdiff && nGinV->IsInside(tof, qdc)) {
-            for (auto it = goodClovEn.begin(); it != goodClovEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("g_tof"))->Fill((*it), cortof);
-                ((THnSparse *)VandleArray->FindObject("g_t_q_dt"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
+                ((THnSparse *)VandleArray->FindObject("g_ct_q_dtm"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
+                ((THnSparse *)VandleArray->FindObject("g_E_q_dt"))->Fill(new Double_t[4]{(*it), tof2En, qdc, curTime});
+                if (nGinV->IsInside(tof, qdc)) {
+                    ((THnSparse *)VandleArray->FindObject("Ban_g_ct_q_dt"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
+                    if (curTime <= 300) {
+                        ((TH2 *)VandleArray->FindObject("g_tof"))->Fill((*it), cortof);
+                        ((TH2 *)VandleArray->FindObject("tE_q_ban"))->Fill(tof2En, qdc);
+                    }
+                }
             }
             for (auto it = goodHagEn.begin(); it != goodHagEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("h_tof"))->Fill((*it), cortof);
+                ((THnSparse *)VandleArray->FindObject("h_ct_q_dt"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
+                ((THnSparse *)VandleArray->FindObject("h_E_q_dt"))->Fill(new Double_t[4]{(*it), tof2En, qdc, curTime});
+                if (nGinV->IsInside(tof, qdc) && curTime <= 300) {
+                    ((TH2 *)VandleArray->FindObject("h_tof"))->Fill((*it), cortof);
+                }
             }
             for (auto it = goodNaiEn.begin(); it != goodNaiEn.end(); it++) {
-                ((TH2D *)VandleArray->FindObject("n_tof"))->Fill((*it), cortof);
+                ((THnSparse *)VandleArray->FindObject("n_ct_q_dt"))->Fill(new Double_t[4]{(*it), cortof, qdc, curTime});
+                if (nGinV->IsInside(tof, qdc) && curTime <= 300) {
+                    ((TH2 *)VandleArray->FindObject("n_tof"))->Fill((*it), cortof);
+                }
             }
+
+            ((THnSparse *)VandleArray->FindObject("T_ct_q_dt"))->Fill(new Double_t[4]{evtEnTotal, cortof, qdc, curTime});
+            ((THnSparse *)VandleArray->FindObject("TG_ct_q_dt"))->Fill(new Double_t[4]{GoodEnTotal, cortof, qdc, curTime});
         }
     }
 
