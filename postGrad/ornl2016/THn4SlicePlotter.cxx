@@ -75,7 +75,7 @@ TH1* Slice4Subractor(TObjArray* h2s, pair<Int_t, Int_t> ids2Sub, pair<Int_t, Int
     return subd;
 }
 
-Int_t THn4SlicePlotter(const vector<vector<pair<Int_t, Int_t>>> ListOfSlices, string nSparse, vector<Int_t> axis2zoom, pair<Int_t, Int_t> axis2proj, Bool_t subtract = false, pair<Int_t, Int_t> subRange = {120, -1}, pair<Int_t,Int_t> normRange = {600,800}, Bool_t subtractDisplay = false) {
+Int_t THn4SlicePlotter(const vector<vector<pair<Int_t, Int_t>>> ListOfSlices, string nSparse, vector<Int_t> axis2zoom, pair<Int_t, Int_t> axis2proj, Bool_t subtract = false, pair<Int_t, Int_t> subRange = {120, -1}, pair<Int_t, Int_t> normRange = {600, 800}, Bool_t subtractDisplay = false, string OutFilePre = "date") {
     TObjArray* Sliced2ds = new TObjArray;
     TObjArray* Subtracted = new TObjArray;
     if (subtract && ListOfSlices.size() < 2) {
@@ -86,8 +86,8 @@ Int_t THn4SlicePlotter(const vector<vector<pair<Int_t, Int_t>>> ListOfSlices, st
     Subtracted->SetName("THn4_subd");
     if (!ListOfSlices.empty() && nSparse != "") {
         THnSparse* Hns = ((THnSparse*)gFile->Get(nSparse.c_str()));
-        if (Hns == 0 ){
-            cout<<"ERROR: Failed to find specified THnSparse. Check spelling"<<endl;
+        if (Hns == 0) {
+            cout << "ERROR: Failed to find specified THnSparse. Check spelling" << endl;
             return 3;
         }
         for (unsigned it = 0; it < ListOfSlices.size(); it++) {
@@ -99,7 +99,7 @@ Int_t THn4SlicePlotter(const vector<vector<pair<Int_t, Int_t>>> ListOfSlices, st
             gDirectory->Add(Sliced2ds);
             cout << "Subtracting" << endl;
             for (Int_t sub = 1; sub <= (Int_t)(ListOfSlices.size() - 1); sub++) {
-                Subtracted->Add(Slice4Subractor(Sliced2ds, {0, sub}, subRange, normRange, sub)); //600,800 for tof
+                Subtracted->Add(Slice4Subractor(Sliced2ds, {0, sub}, subRange, normRange, sub));  //600,800 for tof
             }
 
             gDirectory->Add(Subtracted);
@@ -121,6 +121,22 @@ Int_t THn4SlicePlotter(const vector<vector<pair<Int_t, Int_t>>> ListOfSlices, st
             gDirectory->Add(Sliced2ds);
         }
 
+        // stringstream OutFileName;
+        // if (strcmp(OutFilePre.c_str(), "date") == 0) {
+        //     TDatime now;
+        //     OutFileName << "SlicedOutput_" << now.GetDate() << "_" << now.GetTime() << ".root";
+        // } else if (OutFilePre.find(".root") != string::npos) {
+        //     OutFileName << OutFilePre;
+        // } else {
+        //     OutFileName << OutFilePre <<".root";
+        // }
+
+        // TFile* outFile = new TFile(OutFileName.str().c_str(), "RECREATE");
+        // Sliced2ds->Write();
+        // if(subtract){
+        //     Subtracted->Write();
+        // }
+        // outFile->Close();
         return 0;
     } else {
         cout << "Need List of Slice Ranges and a histogram to cut" << endl;
