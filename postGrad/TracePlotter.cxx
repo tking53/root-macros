@@ -16,7 +16,7 @@
 TObjArray* tracePlots;
 
 using namespace std;
-void TracePlotter(TFile* file, vector<string> chanTrace, Int_t traceLength = 500) {
+void TracePlotter(TFile* file, vector<string> chanTrace,Int_t bitMax = 66000, Int_t traceLength = 500) {
     TTree* PTree = (TTree*)file->Get("PixTree");
     TTreeReader PixTreeEvt;
 
@@ -26,7 +26,7 @@ void TracePlotter(TFile* file, vector<string> chanTrace, Int_t traceLength = 500
     tracePlots = new TObjArray;
     tracePlots->SetName("tracePlots");
     Int_t TraceXBins = traceLength;
-    Int_t TraceYBins = 5000;
+    Int_t TraceYBins = bitMax;
     for (unsigned it = 0; it < chanTrace.size(); it++) {
         string combo = chanTrace.at(it);
         string title = chanTrace.at(it) + " Traces";
