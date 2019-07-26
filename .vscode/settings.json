@@ -75,6 +75,12 @@
     },
     "files.associations": {
         "iomanip": "cpp",
-        "Rb97Full.C": "cpp"
+        "Rb97Full.C": "cpp",
+        "New97Rb.C": "cpp",
+        "new_hagHRBdt.C": "cpp",
+        "new_hagLRBdt.C": "cpp",
+        "new_naiLRBdt.C": "cpp",
+        "AddbackCalculator.C": "cpp",
+        "AddbackPlotter.C": "cpp"
     }
 }
