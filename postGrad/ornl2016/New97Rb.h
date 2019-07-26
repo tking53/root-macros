@@ -47,15 +47,22 @@ class New97Rb : public TSelector {
     Int_t cnt;
     Int_t fcnt;
     Int_t entTotal_;
+    Int_t qdcSlices_;
     Bool_t isChain;
     Double_t DSPclockInSeconds = 8e-9;
     Double_t ADCclockInSeconds = 4e-9;
     Double_t msConvert = 1e-6;
     Double_t timeBinning_;
     Int_t totalCycleTimeBins;
+    Double_t Valid_VandleTdiff;
+
+    pair<Double_t, Double_t> beamOn_Gate_, beamOff_Gate_;
 
     vector<Double_t> hagHRBdToffsets = {149, 158, 160, 159, 159, 168, 160, 161, 357, 348, 358, 365, 357, 356, 359, 359};
     static constexpr Double_t hagridExternDelayOffset = 200;
+
+    //VANDLE ToF vs QDC keys (so that we only need to generate the key once )
+    string TQ_BeamOn_key, TQ_BeamOff_key;
 
     //Vectors of Events for addback
     map<string, GSAddback> H_TASBACK_;  //!<structure for Small HAGRiD addback
@@ -112,7 +119,7 @@ class New97Rb : public TSelector {
     \param [in] reset_ is should we reset the struct before the math. Used at the end of the event loop to catch the current event into the TASback after we plot things
     \return true if we are outside of our sub event window for this subtype:group combo
      */
-    Bool_t DoTASback(string &subtype_, string &group_, Double_t &energy_, Double_t &time_, vector<Double_t>* singlesVec, Bool_t reset_);
+    Bool_t DoTASback(string &subtype_, string &group_, Double_t &energy_, Double_t &time_, vector<Double_t> *singlesVec, Bool_t reset_);
 
     //Return the histograming abrevations for a given type
     vector<string> typeAbrev(string &subtype_);
