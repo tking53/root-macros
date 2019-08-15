@@ -8,21 +8,28 @@
 #ifndef New97Rb_h
 #define New97Rb_h
 
+// ROOT headers
 #include <TChain.h>
 #include <TFile.h>
 #include <TROOT.h>
 #include <TSelector.h>
+#include <TSystem.h>
+#include <TApplication.h>
+
+// Reader Headers
 #include <TTreeReader.h>
 #include <TTreeReaderArray.h>
 #include <TTreeReaderValue.h>
 
-// Headers needed by this particular selector
+//  Histogram and Data Structure Headers
 #include "GSaddback.hpp"
 #include "ProcessorRootStruc.hpp"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
 #include "THnSparse.h"
+#include <TStyle.h>
+#include "TRandom.h"
 
 //Analysis headers
 #include <TCutG.h>
@@ -42,7 +49,7 @@ class New97Rb : public TSelector {
     TTreeReaderArray<processor_struct::LOGIC> logic = {fReader, "logic_vec_"};
     TTreeReaderArray<processor_struct::DOUBLEBETA> beta = {fReader, "doublebeta_vec_"};
 
-    TCutG *betaCloverDT, *vanBanana, *betaHagHrtDT, *betaHagLrtDT, *betaNaiDT;
+    TCutG *betaCloverDT, *vanBanana, *betaHagHrtDT, *betaHagLrtDT, *betaNaiDT, *tasCut;
 
     Int_t cnt;
     Int_t fcnt;
@@ -53,8 +60,10 @@ class New97Rb : public TSelector {
     Double_t ADCclockInSeconds = 4e-9;
     Double_t msConvert = 1e-6;
     Double_t timeBinning_;
-    Int_t totalCycleTimeBins;
-    Double_t Valid_VandleTdiff;
+    Int_t totalCycleTimeBins_;
+    Double_t Valid_VandleTdiff_;
+
+    TRandom* Fuzzer;
 
     pair<Double_t, Double_t> beamOn_Gate_, beamOff_Gate_;
 
@@ -94,6 +103,9 @@ class New97Rb : public TSelector {
     void LoadTCuts();
     void AddToOutputList(TObjArray *iArray);
     void PrintRunStats();
+
+    // Fuzz the tof by the resolution  
+    Double_t FuzzTheToF(Double_t TOF_);
 
     //Build and Init the map of groups, GSaddback stuct
     map<string, GSAddback> BuildTASbackMaps(vector<string> groups_, string type_);
