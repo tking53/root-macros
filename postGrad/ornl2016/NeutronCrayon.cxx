@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -10,6 +11,8 @@
 #include "TROOT.h"
 #include "TKey.h"
 #include "TObjArray.h"
+#include "TMath.h"
+#include "TF1.h"
 
 using namespace std;
 
@@ -19,6 +22,81 @@ map<string,pair<Double_t,Double_t>> GammaRes = {{"h",{4,7}},{"n",{7,7}},{"c",{0.
 
 map<string,Color_t> Colors = {{"N",kBlack},{"h",kRed},{"n",kGreen},{"c",kBlue}};
 
+
+vector<string> AutoLoadTHnSparseList(TFile* file, vector<string> excludes ={"T","G"}){
+  TIter keyList(file->GetListOfKeys());
+  TKey *key;
+  vector<string> sparseList;
+  while ((key = (TKey*)keyList())) {
+    string  sparseClass = key->GetClassName();
+    string sparseName = key->GetName();
+    if (!strstr(sparseClass.c_str(),"THnSparseT") ||  !strstr(sparseName.c_str(),"dd_tof_")){
+      continue;
+    }
+    Bool_t excluded = false;
+    for (auto it : excludes){
+      if (sparseName.substr(7,1) == it){
+        excluded = true;
+      } //end if
+    } //end for
+
+    if(!excluded){
+      sparseList.emplace_back(sparseName);
+    }
+  }// end while 
+  return (sparseList);
+}
+
+double Exp1(double* xx, double* par){
+  double amp1 = par[0];
+  double lambda1 = par[1];
+  double mean1= par[2];
+  double x = xx[0];
+  double result1 = amp1*TMath::Exp(lambda1*(x-mean1)); // Xu's
+  return (result1);
+  
+}
+
+double Gaus1(double* xx, double* par){
+  double gconst = par[0];
+  double gmean = par[1];
+  double gsigma= par[2];
+
+  double x = xx[0];
+  if (x<gmean){
+    return 0;
+  }else {
+    return gconst * (1 - TMath::Gaus(x,gmean,gsigma,kFALSE));
+  }
+}
+
+double GausExpExpExp(double* xx, double* par){
+  double gconst = par[0];
+  double gmean = par[3];
+  double gsigma= par[2];
+
+  double amp1 = par[4];
+  double lambda1 = par[5];
+
+  double amp2 = par[6];
+  double lambda2 = par[7];
+
+  double amp3 = gconst - amp2 - amp1;
+  double lambda3 = par[8];
+  
+  double x = xx[0];
+
+  if (x<=par[3]){
+    return Gaus1(xx,par);
+  }else {
+    double result1 = amp1*TMath::Exp(lambda1*(x-gmean));
+    double result2 = amp2*TMath::Exp(lambda2*(x-gmean));
+    double result3 = amp3*TMath::Exp(lambda3*(x-gmean));
+    return (result1+result2+result3);
+  }
+
+}
+
 //Range input format is <Axis,<RL,RH>>
 TH2D* SparseZP(THnSparse* sparse, pair<Int_t,pair<Double_t,Double_t>> ZoomAxisRange1, pair<Int_t,pair<Double_t,Double_t>> ZoomAxisRange2, pair<Int_t,Int_t> AxisProj, Bool_t addDir = false){
   if (addDir){
@@ -27,8 +105,8 @@ TH2D* SparseZP(THnSparse* sparse, pair<Int_t,pair<Double_t,Double_t>> ZoomAxisRa
     TH1::AddDirectory(kFALSE);  
   }
   sparse->GetAxis(ZoomAxisRange1.first)->SetRangeUser((ZoomAxisRange1.second).first,(ZoomAxisRange1.second).second);
-  sparse->GetAxis(ZoomAxisRange1.first)->SetRangeUser((ZoomAxisRange2.second).first,(ZoomAxisRange2.second).second);
-  return (sparse->Projection(AxisProj.second,AxisProj.first));
+  sparse->GetAxis(ZoomAxisRange2.first)->SetRangeUser((ZoomAxisRange2.second).first,(ZoomAxisRange2.second).second);
+  return (sparse->Projection(AxisProj.second,AxisProj.first)); //Root Likes Y:X for 2ds for some reason (X:Y:Z, X for the others)
 }
 
 vector<TH1D*> LineProjector(TH2D* histo,string HistBaseName, string GamType, Double_t GamEnergy ,Color_t Color, Bool_t subtract = false){
@@ -50,7 +128,6 @@ vector<TH1D*> LineProjector(TH2D* histo,string HistBaseName, string GamType, Dou
   }
 
   vector<pair<Double_t,Double_t>> projectionBounds = {{GamEnergy-HalfWidth,GamEnergy+HalfWidth},{GamEnergy-3*HalfWidth,GamEnergy-HalfWidth},{GamEnergy+HalfWidth,GamEnergy+3*HalfWidth}};
-  TH1::AddDirectory(kFALSE);
   for (auto it =0 ; it<3;it++){
     TH1D* tmp = histo->ProjectionX(ProjOrder.at(it).c_str(),projectionBounds.at(it).first,projectionBounds.at(it).second);
     returnVec.emplace_back(tmp);
@@ -73,34 +150,209 @@ vector<TH1D*> LineProjector(TH2D* histo,string HistBaseName, string GamType, Dou
     returnVec.at(it)->SetLineColor(LineColor);
   }
 
+
   return (returnVec);
 }
 
+TObjArray* QDCbackground_(TH2* hist, pair<Int_t,Int_t> tofRange, Bool_t addDir = false,  pair<Int_t,Int_t> fullFit = {20,20000},  pair<Int_t,Int_t> expFit0 = {20,140}, pair<Int_t,Int_t> expFit1 = {140,500}, pair<Int_t,Int_t> expFit2 = {500,2000},pair<Int_t,Int_t> expFit3 = {2000,80000}){
+  if (addDir){
+    TH1::AddDirectory(kTRUE);
+  } else {
+    TH1::AddDirectory(kFALSE);  
+  }
 
-vector<string> AutoLoadTHnSparseList(TFile* file, vector<string> excludes ={"T","G"}){
-  TIter keyList(file->GetListOfKeys());
-  TKey *key;
-  vector<string> sparseList;
-  while ((key = (TKey*)keyList())) {
-    string  sparseClass = key->GetClassName();
-    string sparseName = key->GetName();
-    if (!strstr(sparseClass.c_str(),"THnSparseT") ||  !strstr(sparseName.c_str(),"dd_tof_")){
-      continue;
+  if (tofRange.first >= tofRange.second){
+    cout<<"ToF Range Low must be less than ToF Range High"<<endl;
+    TObjArray* retVal = new TObjArray;
+    retVal->SetName("error_array");
+    return retVal;
+  }
+  
+  TH1D* qdcbackground_ = hist->ProjectionY("qdcbackground_",tofRange.first,tofRange.second);
+  qdcbackground_->GetXaxis()->SetRangeUser(20,20000);
+  if (addDir){
+    qdcbackground_->SetLineColor(kBlack);
+    qdcbackground_->SetLineWidth(2); //Set Color things for drawing if single run
+  }
+
+  //Fit the single funcs for initial paras
+  TF1 *expFunc0 = new TF1("expFunc0","Gaus1",expFit0.first,expFit0.second,3);
+  TF1 *expFunc1 = new TF1("expFunc1","Exp1",expFit1.first,expFit1.second,3);
+  TF1 *expFunc2 = new TF1("expFunc2","Exp1",expFit2.first,expFit2.second,3);
+  TF1 *expFunc3 = new TF1("expFunc3","Exp1",expFit3.first,expFit3.second,3);
+
+  expFunc0->SetParameter(0,qdcbackground_->GetMaximum());
+  expFunc0->SetParameter(1,0); // inverted Gaus has centroid at 0 
+  expFunc0->SetParameter(2,75);// sigma for the gaus
+
+  expFunc1->SetParameter(0,qdcbackground_->GetMaximum());
+  expFunc1->SetParameter(1,(Double_t)-2e-3); // nominal from ornl2016 but works for IS632 as well
+  expFunc1->FixParameter(2,qdcbackground_->GetBinCenter(qdcbackground_->GetMaximumBin()));
+
+  expFunc2->SetParameter(0,0.1*qdcbackground_->GetMaximum());
+  expFunc2->SetParameter(1,(Double_t)-2e-4);
+  expFunc2->FixParameter(2,qdcbackground_->GetBinCenter(qdcbackground_->GetMaximumBin()));
+
+  expFunc3->SetParameter(0,0.01*qdcbackground_->GetMaximum());
+  expFunc3->SetParameter(1,(Double_t)-2e-5);
+  expFunc3->FixParameter(2,qdcbackground_->GetBinCenter(qdcbackground_->GetMaximumBin()));
+
+  qdcbackground_->Fit("expFunc0","R+");
+  qdcbackground_->Fit("expFunc1","R+");
+  qdcbackground_->Fit("expFunc2","R+");
+  qdcbackground_->Fit("expFunc3","R+");
+
+  // FULL FITTING 
+  TF1 *qdcFunc = new TF1("qdcFunc",GausExpExpExp,fullFit.first,fullFit.second,9);
+  qdcFunc->SetNpx(1000);// add points to the fit
+
+  qdcFunc->SetParameter(0,expFunc0->GetParameter(0));
+  qdcFunc->FixParameter(1,expFunc0->GetParameter(1)); //fix the gaus centroid 
+  qdcFunc->SetParameter(2,expFunc0->GetParameter(2));
+
+  qdcFunc->FixParameter(3,qdcbackground_->GetBinCenter(qdcbackground_->GetMaximumBin())); //Set the inflection point for where we stop being the Gaus1 and start the Exp
+
+  qdcFunc->SetParameter(4,expFunc1->GetParameter(0)*0.55); //0.55 is the scaling factor to make the exp1+exp2+exp3 match the gaus at Par[3]
+  qdcFunc->SetParameter(5,expFunc1->GetParameter(1));
+
+  qdcFunc->SetParameter(6,expFunc2->GetParameter(0)*0.35); //0.55 is the scaling factor to make the exp1+exp2+exp3 match the gaus at Par[3]
+  qdcFunc->SetParameter(7,expFunc2->GetParameter(1));
+
+  qdcFunc->SetParameter(8,expFunc3->GetParameter(1)); //the amp of the 3rd exp is derived from the other 2 so we dont set it
+
+  qdcbackground_->Fit("qdcFunc","RL");
+
+  if(addDir){ // again add colors if we are running stand alone;
+  qdcFunc->SetLineColor(kViolet-2);
+  qdcFunc->SetLineWidth(3);
+  qdcFunc->Draw("SAME");
+  }
+
+  //Make the 2d background
+
+  TH2D* expBackground = new TH2D("expBackground","expBackground",hist->GetNbinsX(),0,hist->GetXaxis()->GetXmax(),hist->GetNbinsY(),0,hist->GetYaxis()->GetXmax());
+  for (int tof_bin = 0; tof_bin < hist->GetNbinsX(); tof_bin++) {
+    TH1D* qdc_Proj = hist->ProjectionY("qdc_Proj",tof_bin,tof_bin);
+    for (int qdc_bin = 30; qdc_bin < qdc_Proj->GetNbinsX(); qdc_bin++) {
+      expBackground->SetBinContent(tof_bin,qdc_bin,qdcFunc->Eval(qdc_Proj->GetBinCenter(qdc_bin)));
     }
-    Bool_t excluded = false;
-    for (auto it : excludes){
-      if (sparseName.substr(7,1) == it){
-        excluded = true;
-      } //end if
-    } //end for   
-    if(!excluded){
-      sparseList.emplace_back(sparseName);
-    }
-  }// end while 
-  return (sparseList);
+  }
+  TH2D* t1 = (TH2D*)hist->Clone();
+  t1->SetName("t1");
+  Double_t binL = hist->GetXaxis()->FindBin(tofRange.first) ;
+  Double_t binH = hist->GetXaxis()->FindBin(tofRange.second) ;
+  expBackground->Scale((Double_t)1.0/(binH-binL)); 
+  t1->Add(expBackground,-1);
+  t1->SetMinimum(1);
+  t1->SetMaximum(1200);
+
+  TObjArray* retVal = new TObjArray;
+  if (!addDir){
+    string arrayName = (string)hist->GetName() + "_tofR_" + to_string(tofRange.first) + "-" + to_string(tofRange.second);
+    retVal->SetName(arrayName.c_str());
+
+    retVal->Add(t1);
+    retVal->Add(expBackground);
+    retVal->Add(qdcFunc);
+    return retVal;
+  } else {
+    cout<<"Histograms returned to gDirectory. Array is empty"<<endl;
+    retVal->SetName("empty_array");
+    return retVal;
+  }
 }
 
-Int_t NeutronCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pair<Double_t,Double_t> qdcCut = {0,-1}, pair<Int_t,Int_t> tapeCut = {1,300}, Bool_t subtract = false){
+// Gamma Line Tof Projector using the qdc depended background subtraction
+
+map<string,TObjArray*> GammaProjector(Double_t GamEnergy, vector<string> nSparseList = {}, pair<Int_t,Int_t> tapeCut = {1,300}, pair<Int_t,Int_t> TOFRANGE = {400,600} ){
+
+  map<string,TObjArray*> returnMap_;
+
+  for (auto it = nSparseList.begin(); it != nSparseList.end();it++) {
+    auto SparseIt = (*it);
+    THnSparse* curSparse = (THnSparse*)gDirectory->Get(SparseIt.c_str());
+    string GammaType , GamDet, projecBaseName = "dd_tof_qdc";
+    Bool_t NeutronSingles =false;
+    GammaType = SparseIt.substr(7, 1);  // New97Rb THnSparse is 8th letter
+    if (GammaType == "c") {
+      GamDet = "Clover";
+      projecBaseName += "_c_";
+    } else if (GammaType == "h") {
+      GamDet = "LaBr";
+      projecBaseName += "_h_";
+    } else if (GammaType == "n") {
+      GamDet = "NaI";
+      projecBaseName += "_n_";
+    } else if (GammaType == "T") {
+      GamDet = "PixieTAS";
+      projecBaseName += "_T_";
+    }else if (GammaType == "N"){
+      GamDet = "None";
+      NeutronSingles = true;
+      // projecBaseName = "dd_tof_qdc";
+    }else {
+      cout << "ERROR::Unknown Gamma Det Type (" << GammaType << ")" << endl;
+      continue ;
+    }
+
+    TH2D* workingHist;
+    if(NeutronSingles ) {
+      workingHist = SparseZP(curSparse,{3,{tapeCut.first,tapeCut.second}},{1,{0,1}},{0,2},false);
+
+    }else {
+      Double_t GamL,GamH;
+      if ( GamEnergy == 814){
+        GamL =  GamEnergy - ((GammaRes.find(GammaType.c_str())->second.first /  100 ) * GamEnergy) / 2 ;
+        GamH =  GamEnergy + ((GammaRes.find(GammaType.c_str())->second.first /  100 ) * GamEnergy) / 2 ;
+      } else {
+        GamL =  GamEnergy - ((GammaRes.find(GammaType.c_str())->second.second /  100 ) * GamEnergy) / 2 ;
+        GamH =  GamEnergy + ((GammaRes.find(GammaType.c_str())->second.second /  100 ) * GamEnergy) / 2 ;
+      }  
+      workingHist = SparseZP(curSparse,{3,{tapeCut.first,tapeCut.second}},{1,{GamL,GamH}},{0,2},false);
+    }
+
+    workingHist->SetName(projecBaseName.c_str());
+    TObjArray* tmp = QDCbackground_(workingHist,{TOFRANGE.first,TOFRANGE.second},false);
+    string newTOAName = (string)tmp->GetName() + "_" + to_string(GamEnergy);
+    tmp->SetName(newTOAName.c_str());
+
+    returnMap_.emplace(GammaType,tmp);
+  }
+  return returnMap_;          
+}
+
+
+Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pair<Double_t,Double_t> qdcCut = {0,-1}, pair<Double_t,Double_t> TOFRANGE = {400,600}){
+  if (!gROOT->GetFile() && inFileStr == "_file0"){
+    cout<<"No File is opened"<<endl;
+    return 1;
+  }
+
+  if (inFileStr == "_file0") {
+    inFileStr = gROOT->GetFile()->GetName();
+  }
+  TFile* inFile = new TFile(inFileStr.c_str());
+
+  if(nSparseList.empty()){
+    nSparseList = AutoLoadTHnSparseList(inFile); 
+  }
+
+  vector<map<string,TObjArray*>> fullContainer; //<GammaIndex,< return maps >>
+  TObjArray* shortList = new TObjArray*;
+  shortList->SetName("shortList");
+  for (auto it = 0; it < GammaEnergies.size(); it++){
+    Double_t curEnergy = GammaEnergies.at(it);
+    map<string,TObjArray*> tmp = GammProjector(curEnergy);
+
+
+
+  }
+
+
+}
+
+
+Int_t OldNeutronCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pair<Double_t,Double_t> qdcCut = {0,-1}, pair<Int_t,Int_t> tapeCut = {1,300}, Bool_t subtract = false){
   if (!gROOT->GetFile() && inFileStr == "_file0"){
     cout<<"No File is opened"<<endl;
     return 1;
