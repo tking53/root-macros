@@ -1,19 +1,42 @@
 {
     "C_Cpp.intelliSenseEngineFallback": "Disabled",
     "deploy.reloaded": {
+        "deployOnChange": true,
+        "deployOnSaveButton": {
+            "enabled": true, // button enabled or not
+            "priority": 0,
+            "text": "DeployOnSave",
+            "tooltip": "Click here to toggle state",
+            "color": "#f22f2f"
+        },
+        "deployOnChangeButton": {
+            "enabled": true, // button enabled or not
+            "priority": 0,
+            "text": "DeployOnChange",
+            "tooltip": "Click here to toggle state",
+            "color": "#ffff00"
+        },
         "packages": [
             {
                 "name": "root macros",
+                "deployOnSave": ["Root Deployer"],
                 "description": "",
                 "files": [
-                    "**"
+                    "**",
+                    "*.C",
+                    "*.h",
+                    "*.cxx",
+                    "*.hpp",
+                    "*.cpp"
                 ],
                 "exclude": [
                     "build/**",
                     "install/**",
-                    "cmake-build-debug/**"
-                ],
-                "deployOnSave": false
+                    "cmake-build-debug/**",
+                    "*.d",
+                    "*.so",
+                    "*.pcm"
+                ]
             }
         ],
         "targets": [
@@ -28,17 +51,23 @@
                 "options": [
                     {
                         "name": "quack-macros",
-                        "targets": [ "quack" ],
+                        "targets": [
+                            "quack"
+                        ],
                         //"isDefault": true
                     },
                     {
                         "name": "donda-macros",
-                        "targets": [ "donda" ],
+                        "targets": [
+                            "donda"
+                        ],
                         "isDefault": true
                     },
                     {
                         "name": "veda-macros",
-                        "targets": [ "veda" ],
+                        "targets": [
+                            "veda"
+                        ],
                         // "isDefault": true
                     }
                 ]
@@ -81,6 +110,58 @@
         "new_hagLRBdt.C": "cpp",
         "new_naiLRBdt.C": "cpp",
         "AddbackCalculator.C": "cpp",
-        "AddbackPlotter.C": "cpp"
+        "AddbackPlotter.C": "cpp",
+        "cctype": "cpp",
+        "clocale": "cpp",
+        "cmath": "cpp",
+        "cstdarg": "cpp",
+        "cstddef": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "cwchar": "cpp",
+        "cwctype": "cpp",
+        "array": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "*.tcc": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "cstdint": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "exception": "cpp",
+        "string_view": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp",
+        "initializer_list": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "memory": "cpp",
+        "mutex": "cpp",
+        "new": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp",
+        "streambuf": "cpp",
+        "string": "cpp",
+        "system_error": "cpp",
+        "thread": "cpp",
+        "type_traits": "cpp",
+        "tuple": "cpp",
+        "typeinfo": "cpp",
+        "utility": "cpp"
     }
 }
