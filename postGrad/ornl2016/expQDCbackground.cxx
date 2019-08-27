@@ -32,12 +32,12 @@
 int cutStep_qdc=1000;
 int minQDC=10;
 int maxQDC=20000;
-int qdc_bins=2000;
+int qdc_bins=20000;
 
 int cutStep_tof=10;
 int minTOF=0;
 int maxTOF=1500;
-int tof_bins=1500;
+int tof_bins=3000;
 TF1 *background_TOF_fit;
 TCanvas* canvas;
 // double minQDC_expFunc0=200;
@@ -48,7 +48,7 @@ TCanvas* canvas;
 // double maxQDC_background_TOF_fit=20000;
 
 
-double Exp1(double* xx, double* par){
+double EXP1(double* xx, double* par){
   double amp1 = par[0];
   double lambda1 = par[1];
   double mean1= par[2];
@@ -57,7 +57,7 @@ double Exp1(double* xx, double* par){
   return (result1);
   
 }
-double Exp2(double* xx, double* par){
+double EXP2(double* xx, double* par){
   double amp2 = par[0];
   double lambda2 = par[1];
   double mean2= par[2];
@@ -66,7 +66,7 @@ double Exp2(double* xx, double* par){
   return (result2);
  
 }
-double Gaus1(double* xx, double* par){
+double GAUS1(double* xx, double* par){
   double gconst = par[0];
   double gmean = par[1];
   double gsigma= par[2];
@@ -98,7 +98,7 @@ double GausExpExpLin(double* xx, double* par){
   
   double x = xx[0];
   if (x<=par[3]){
-    return Gaus1(xx,par);
+    return GAUS1(xx,par);
   }else {
     double result1 = amp1*TMath::Exp(lambda1*(x-gmean)); // Xu's
     double result2 = amp2*TMath::Exp(lambda2*(x-gmean)); // Xu's
@@ -137,8 +137,8 @@ void expQDCbackground(TH2* hist, pair<Int_t,Int_t> tofRange,  pair<Int_t,Int_t> 
    
   }
 
-  TH1D* qdcbackground_ = hist->ProjectionY("qdcbackground_",tofRange.first,tofRange.second);
-  qdcbackground_->Rebin(10);
+  TH1D* qdcbackground_ = hist->ProjectionY("qdcbackground_",hist->GetXaxis()->FindBin(tofRange.first),hist->GetXaxis()->FindBin(tofRange.second));
+  // qdcbackground_->Rebin(10);
   qdcbackground_->SetLineColor(kBlack);
   qdcbackground_->SetLineWidth(2);
   qdcbackground_->GetXaxis()->SetRangeUser(50,20000);
@@ -167,10 +167,10 @@ void expQDCbackground(TH2* hist, pair<Int_t,Int_t> tofRange,  pair<Int_t,Int_t> 
   // expFunc2->Draw("same");
   // expFunc3->Draw("same");
 
-  TF1 *expFunc0 = new TF1("expFunc0","Gaus1",minQDC_expFunc0,maxQDC_expFunc0,3);
-  TF1 *expFunc1 = new TF1("expFunc1","Exp1",minQDC_expFunc1,maxQDC_expFunc1,3);
-  TF1 *expFunc2 = new TF1("expFunc2","Exp1",minQDC_expFunc2,maxQDC_expFunc2,3);
-  TF1 *expFunc3 = new TF1("expFunc3","Exp1",minQDC_expFunc3,maxQDC_expFunc3,3);
+  TF1 *expFunc0 = new TF1("expFunc0","GAUS1",minQDC_expFunc0,maxQDC_expFunc0,3);
+  TF1 *expFunc1 = new TF1("expFunc1","EXP1",minQDC_expFunc1,maxQDC_expFunc1,3);
+  TF1 *expFunc2 = new TF1("expFunc2","EXP1",minQDC_expFunc2,maxQDC_expFunc2,3);
+  TF1 *expFunc3 = new TF1("expFunc3","EXP1",minQDC_expFunc3,maxQDC_expFunc3,3);
 
   expFunc0->SetParameter(0,qdcbackground_->GetMaximum());
   expFunc0->SetParameter(1,0);
@@ -260,24 +260,24 @@ void expQDCbackground(TH2* hist, pair<Int_t,Int_t> tofRange,  pair<Int_t,Int_t> 
   // if ((TH2*)gDirectory->Get("expBackGround")) {
   //   ((TH2*)gDirectory->Get("expBackGround"))->Delete();
   // } 
-  // TH2D* expBackGround = new TH2D("expBackGround","expBackGround",tof_bins,0,1500,qdc_bins,0,maxQDC);
+  TH2D* expBackGround = new TH2D("expBackGround","expBackGround",tof_bins,0,1500,qdc_bins,0,maxQDC);
 
-  // for (int tof_bin = 0; tof_bin < hist->GetNbinsX(); tof_bin++) {
-  //   TH1D* qdc_Proj = hist->ProjectionY("qdc_Proj",tof_bin,tof_bin);
-  //   qdc_Proj->Rebin(10);
-  //   for (int qdc_bin = 6; qdc_bin < qdc_Proj->GetNbinsX(); qdc_bin++) {
-  //     expBackGround->SetBinContent(tof_bin,qdc_bin,background_TOF_fit->Eval(qdc_Proj->GetBinCenter(qdc_bin)));
+  for (int tof_bin = 0; tof_bin < hist->GetNbinsX(); tof_bin++) {
+    TH1D* qdc_Proj = hist->ProjectionY("qdc_Proj",tof_bin,tof_bin);
+    // qdc_Proj->Rebin(10);
+    for (int qdc_bin = 6; qdc_bin < qdc_Proj->GetNbinsX(); qdc_bin++) {
+      expBackGround->SetBinContent(tof_bin,qdc_bin,myF->Eval(qdc_Proj->GetBinCenter(qdc_bin)));
 
   //     //   if(tof_bin==0)
   //     //   cout<<"Bin= "<<qdc_bin<<"       Center= "<<qdc_Proj->GetBinCenter(qdc_bin)<<"     Value="<<background_TOF_fit->Eval(qdc_Proj->GetBinCenter(qdc_bin))<<endl;
-  //   }
-  // }
-  // expBackGround->Scale((Double_t)1/(Double_t)100);
+    }
+  }
+  //expBackGround->Scale((Double_t)1/(Double_t)100);
 
   // TH2D* t1 = (TH2D*)hist->Clone();
   // t1->SetName("t1");
-  // t1->RebinY(10);
-  // t1->RebinX(2);
+  // // t1->RebinY(10);
+  // // t1->RebinX(2);
   // t1->Add(expBackGround,-1);
   // t1->SetMinimum(1);
   // t1->SetMaximum(1200);
