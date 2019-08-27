@@ -110,10 +110,10 @@ void New97Rb::SlaveBegin(TTree * /*tree*/) {
     HistList->Add(new TH2F("dd_qdc_tof_flash", "ToF vs QDC: Gamma Flash", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
 
     //! Tof vs qdc vs Tape Timing in a Dim == 4 Sparse like the others so that it can be sliced with the same code
-    HistList->Add(new THnSparseF("dd_tof_NA_qdc_tape", "Vandle corTof vs Vandle QDC vs empty Gamma  vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, VQdcBins_, 0, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(0), static_cast<Double_t>(totalCycleTimeBins_)}));
+    HistList->Add(new THnSparseF("dd_tof_NA_qdc_tape", "Vandle corTof vs Vandle QDC vs empty Gamma  vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, 1, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(1), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! tof vs HAG energy vs Van qdc vs tape
-    HistList->Add(new THnSparseF("1", "Vandle corTof vs HAGRiD Energy vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, HagBins_, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(HagBins_), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
+    HistList->Add(new THnSparseF("dd_tof_h_qdc_tape", "Vandle corTof vs HAGRiD Energy vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, HagBins_, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(HagBins_), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! tof vs Nai energy vs Van qdc vs tape
     HistList->Add(new THnSparseF("dd_tof_n_qdc_tape", "Vandle corTof vs Nai Energy vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, NaiBins_, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(NaiBins_), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
@@ -128,13 +128,13 @@ void New97Rb::SlaveBegin(TTree * /*tree*/) {
     HistList->Add(new THnSparseF("dd_tof_G_qdc_tape", "Vandle corTof vs All Gamma Dets Energy vs Vandle QDC vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, TB_Bins_, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! Hagrid vs Pixie Event energy vs 0 vs tape
-    HistList->Add(new THnSparseF("dd_h_TAS_0_tape", "Hagrid vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{HagBins_, TB_Bins_, 0, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(HagBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(0), static_cast<Double_t>(totalCycleTimeBins_)}));
+    HistList->Add(new THnSparseF("dd_h_TAS_0_tape", "Hagrid vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{HagBins_, TB_Bins_, 1, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(HagBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(1), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! Nai vs Pixie Event energy vs 0 vs tape
-    HistList->Add(new THnSparseF("dd_n_TAS_0_tape", "Nai vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{NaiBins_, TB_Bins_, 0, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(NaiBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(0), static_cast<Double_t>(totalCycleTimeBins_)}));
+    HistList->Add(new THnSparseF("dd_n_TAS_0_tape", "Nai vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{NaiBins_, TB_Bins_, 1, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(NaiBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(1), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! Clover vs Pixie Event energy vs 0 vs tape
-    HistList->Add(new THnSparseF("dd_c_TAS_0_tape", "Clover vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{CloverBins_, TB_Bins_, 0, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(0), static_cast<Double_t>(totalCycleTimeBins_)}));
+    HistList->Add(new THnSparseF("dd_c_TAS_0_tape", "Clover vs Pixie Event energy vs EMPTY() vs Time in Cycle", 4, new Int_t[4]{CloverBins_, TB_Bins_, 1, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0}, new Double_t[4]{static_cast<Double_t>(CloverBins_), static_cast<Double_t>(TB_Bins_), static_cast<Double_t>(1), static_cast<Double_t>(totalCycleTimeBins_)}));
 
     //! Special tof vs clover/TAS debuggers
     HistList->Add(new TH2F("dd_tof_CLOVER_BON", "Tof vs CLOVER E beam on (no qdc cut)", VTofBins_, 0, VTofBins_, CloverBins_, 0, CloverBins_));
@@ -467,7 +467,6 @@ Bool_t New97Rb::Process(Long64_t entry) {
             ((TH2 *)HistList->FindObject("dd_cortof_qdc"))->Fill(cortof_, qdc_);
             ((TH2 *)HistList->FindObject("dd_ftof_qdc"))->Fill(fuzCortof_, qdc_);
         }
-
         //! Tof vs qdc vs Tape Timing in a Dim == 4
         ((THnSparse *)HistList->FindObject("dd_tof_NA_qdc_tape"))->Fill(new Double_t[4]{cortof_, 0, qdc_, tapeTime_});
 
