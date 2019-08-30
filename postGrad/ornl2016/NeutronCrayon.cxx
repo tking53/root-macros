@@ -1,8 +1,8 @@
-
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "TApplication.h"
 #include "TCanvas.h"
 #include "TF1.h"
 #include "TFile.h"
@@ -16,9 +16,11 @@
 
 using namespace std;
 
-vector<Double_t> GammaEnergies = {414.3, 692, 814, 1037.3, 1180, 1335.9, 1402.4, 1506.9, 2083};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
+// vector<Double_t> GammaEnergies = {414.3, 692, 814, 1037.3, 1180, 1335.9, 1402.4, 1506.9, 2083};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
 
-map<string, pair<Double_t, Double_t>> GammaRes = {{"h", {4, 7}}, {"n", {7, 7}}, {"c", {0.75, 1.25}}};  // ~% resolutions as % first is single lines and second is 813/815
+vector<Double_t> GammaEnergies = {814};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
+
+map<string, pair<Double_t, Double_t>> GammaRes = {{"h", {4.8, 7}}, {"n", {7.6, 7}}, {"c", {0.75, 1.25}}};  // ~% resolutions as % first is single lines and second is 813/815
 
 map<string, Color_t> Colors = {{"N", kBlack}, {"h", kRed}, {"n", kGreen}, {"c", kBlue}};
 
@@ -87,9 +89,18 @@ double GausExpExpExp(double* xx, double* par) {
     if (x <= par[3]) {
         return Gaus1(xx, par);
     } else {
-        double result1 = amp1 * TMath::Exp(lambda1 * (x - gmean));
-        double result2 = amp2 * TMath::Exp(lambda2 * (x - gmean));
-        double result3 = amp3 * TMath::Exp(lambda3 * (x - gmean));
+        double result1 = 0;
+        double result2 = 0;
+        double result3 = 0;
+        if (amp1 >= 0) {
+            result1 = amp1 * TMath::Exp(lambda1 * (x - gmean));
+        }
+        if (amp2 >= 0) {
+            result2 = amp2 * TMath::Exp(lambda2 * (x - gmean));
+        }
+        if (amp3 >= 0) {
+            result3 = amp3 * TMath::Exp(lambda3 * (x - gmean));
+        }
         return (result1 + result2 + result3);
     }
 }
@@ -150,7 +161,7 @@ vector<TH1D*> LineProjector(TH2D* histo, string HistBaseName, string GamType, Do
     return (returnVec);
 }
 
-TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir = false, pair<Int_t, Int_t> fullFit = {20, 20000}, pair<Int_t, Int_t> expFit0 = {20, 140}, pair<Int_t, Int_t> expFit1 = {140, 500}, pair<Int_t, Int_t> expFit2 = {500, 2000}, pair<Int_t, Int_t> expFit3 = {2000, 80000}) {
+TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir = false, pair<Int_t, Int_t> fullFit = {20, 20000}, pair<Int_t, Int_t> expFit0 = {20, 140}, pair<Int_t, Int_t> expFit1 = {140, 500}, pair<Int_t, Int_t> expFit2 = {500, 2000}, pair<Int_t, Int_t> expFit3 = {2000, 8000}) {
     if (addDir) {
         TH1::AddDirectory(kTRUE);
     } else {
@@ -164,9 +175,11 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
         return retVal;
     }
 
-    pair<Int_t, Int_t> tofRangeBins = {hist->GetXaxis()->FindBin(tofRange.first), hist->GetXaxis()->FindBin(tofRange.second)};
+    pair<Int_t, Int_t> tofRangeBins = {hist->GetXaxis()->FindBin(tofRange.first),
+                                       hist->GetXaxis()->FindBin(tofRange.second)};
 
-    TH1D* qdcbackground_ = hist->ProjectionY("qdcbackground_", tofRangeBins.first, tofRangeBins.second);
+    string qdcBKGname_ = (string)hist->GetName() + "qdcbackground_";
+    TH1D* qdcbackground_ = hist->ProjectionY(qdcBKGname_.c_str(), tofRangeBins.first, tofRangeBins.second);
     qdcbackground_->GetXaxis()->SetRangeUser(20, 20000);
     if (addDir) {
         qdcbackground_->SetLineColor(kBlack);
@@ -195,13 +208,14 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
     expFunc3->SetParameter(1, (Double_t)-2e-5);
     expFunc3->FixParameter(2, qdcbackground_->GetBinCenter(qdcbackground_->GetMaximumBin()));
 
-    qdcbackground_->Fit("expFunc0", "R+");
-    qdcbackground_->Fit("expFunc1", "R+");
-    qdcbackground_->Fit("expFunc2", "R+");
-    qdcbackground_->Fit("expFunc3", "R+");
+    qdcbackground_->Fit("expFunc0", "RL+");
+    qdcbackground_->Fit("expFunc1", "RL+");
+    qdcbackground_->Fit("expFunc2", "RL+");
+    qdcbackground_->Fit("expFunc3", "RL+");
 
     // FULL FITTING
-    TF1* qdcFunc = new TF1("qdcFunc", GausExpExpExp, fullFit.first, fullFit.second, 9);
+    string functionName = (string)hist->GetName() + "_qdcFunc";
+    TF1* qdcFunc = new TF1(functionName.c_str(), GausExpExpExp, fullFit.first, fullFit.second, 9);
     qdcFunc->SetNpx(1000);  // add points to the fit
 
     qdcFunc->SetParameter(0, expFunc0->GetParameter(0));
@@ -218,7 +232,7 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
 
     qdcFunc->SetParameter(8, expFunc3->GetParameter(1));  //the amp of the 3rd exp is derived from the other 2 so we dont set it
 
-    qdcbackground_->Fit("qdcFunc", "RL");
+    qdcbackground_->Fit(functionName.c_str(), "RLM");
 
     if (addDir) {  // again add colors if we are running stand alone;
         qdcFunc->SetLineColor(kViolet - 2);
@@ -227,8 +241,9 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
     }
 
     //Make the 2d background
-
-    TH2D* expBackground = new TH2D("expBackground", "expBackground", hist->GetNbinsX(), 0, hist->GetXaxis()->GetXmax(), hist->GetNbinsY(), 0, hist->GetYaxis()->GetXmax());
+    string exp2D_key = (string)hist->GetName() + "_expBackground";
+    string exp2D_name = (string)hist->GetTitle() + " expBackground";
+    TH2D* expBackground = new TH2D(exp2D_key.c_str(), exp2D_name.c_str(), hist->GetNbinsX(), 0, hist->GetXaxis()->GetXmax(), hist->GetNbinsY(), 0, hist->GetYaxis()->GetXmax());
     for (int tof_bin = 0; tof_bin < hist->GetNbinsX(); tof_bin++) {
         TH1D* qdc_Proj = hist->ProjectionY("qdc_Proj", tof_bin, tof_bin);
         for (int qdc_bin = 30; qdc_bin < qdc_Proj->GetNbinsX(); qdc_bin++) {
@@ -236,7 +251,8 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
         }
     }
     TH2D* t1 = (TH2D*)hist->Clone();
-    t1->SetName("t1");
+    string t1Name = (string)hist->GetName() + "_sub";
+    t1->SetName(t1Name.c_str());
     Double_t scaler = (Double_t)1.0 / (tofRangeBins.second - tofRangeBins.first);
     cout << "scaler = " << scaler << "     tofRangeBins.first= " << tofRangeBins.first << "     tofRangeBins.second=" << tofRangeBins.second << endl;
     expBackground->Scale(scaler);
@@ -246,16 +262,19 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
 
     TObjArray* retVal = new TObjArray;
     if (!addDir) {
+        cout << "Adding to return array" << endl;
         string arrayName = (string)hist->GetName() + "_tofR_" + to_string(tofRange.first) + "-" + to_string(tofRange.second);
         retVal->SetName(arrayName.c_str());
 
         retVal->Add((TH2*)t1->Clone());
+        retVal->Add((TH2*)hist->Clone());
         retVal->Add((TH2*)expBackground->Clone());
         retVal->Add((TH1*)qdcFunc->Clone());
         t1->Delete();
         expBackground->Delete();
         qdcFunc->Delete();
-
+        // hist->Delete();
+        cout << "returning array" << endl;
         return retVal;
     } else {
         cout << "Histograms returned to gDirectory. Array is empty" << endl;
@@ -264,7 +283,7 @@ TObjArray* QDCbackground_(TH2* hist, pair<Int_t, Int_t> tofRange, Bool_t addDir 
     }
 }
 
-// Gamma Line Tof Projector using the qdc depended background subtraction
+//! Gamma Line Tof Projector using the qdc depended background subtraction
 
 map<string, TObjArray*> GammaProjector(Double_t GamEnergy, vector<string> nSparseList = {}, pair<Int_t, Int_t> tapeCut = {1, 300}, pair<Int_t, Int_t> TOFRANGE = {400, 600}) {
     map<string, TObjArray*> returnMap_;
@@ -293,28 +312,43 @@ map<string, TObjArray*> GammaProjector(Double_t GamEnergy, vector<string> nSpars
             cout << "ERROR::Unknown Gamma Det Type (" << GammaType << ")" << endl;
             continue;
         }
-        projecBaseName += to_string(GamEnergy);
+        stringstream projectionName;
+        projectionName << projecBaseName << GamEnergy;
+        //projecBaseName += to_string(GamEnergy);
 
         Double_t GamL, GamH;
         if (GamEnergy == 814) {
+            // if (GammaType == "c") {
+            //     cout<<"Special CLover"<<endl;
+            //     GamEnergy = 809;
+            // }
             GamL = GamEnergy - ((GammaRes.find(GammaType.c_str())->second.first / 100) * GamEnergy) / 2;
             GamH = GamEnergy + ((GammaRes.find(GammaType.c_str())->second.first / 100) * GamEnergy) / 2;
+            // if (GammaType == "c") {
+            //     GamEnergy = 814;
+            // }
         } else {
             GamL = GamEnergy - ((GammaRes.find(GammaType.c_str())->second.second / 100) * GamEnergy) / 2;
             GamH = GamEnergy + ((GammaRes.find(GammaType.c_str())->second.second / 100) * GamEnergy) / 2;
         }
-        TH2D* workingHist = SparseZP(curSparse, {3, {tapeCut.first, tapeCut.second}}, {1, {GamL, GamH}}, {0, 2}, false);
 
-        workingHist->SetName(projecBaseName.c_str());
+        TH2D* workingHist = SparseZP(curSparse, {3, {tapeCut.first, tapeCut.second}}, {1, {GamL, GamH}}, {0, 2}, false);
+        cout<<"GamL = "<<GamL << "       GamH= "<< GamH<<endl;
+        workingHist->SetName(projectionName.str().c_str());
         workingHist->Sumw2();
-        TObjArray* tmp = QDCbackground_(workingHist, {TOFRANGE.first, TOFRANGE.second}, false);
-        ((TH2D*)tmp->First())->SetName(projecBaseName.c_str());
-        string newTOAName = (string)tmp->GetName() + "_" + to_string(GamEnergy);
-        tmp->SetName(newTOAName.c_str());
+        projectionName << "_subd";
+        TObjArray* tmp2 = QDCbackground_(workingHist, {TOFRANGE.first, TOFRANGE.second}, false);
+        ((TH2D*)tmp2->First())->SetName(projectionName.str().c_str());
+        string newTOAName = (string)tmp2->GetName() + "_" + to_string(GamEnergy);
+        tmp2->SetName(newTOAName.c_str());
         cout << "Previous fit was for detector type:" << GammaType << " and  GammaEnergy= " << GamEnergy << endl;
-        returnMap_.emplace(GammaType, tmp);
+        returnMap_.emplace(GammaType, tmp2);
         workingHist->Delete();
+        //tmp2->Delete();
+        cout << "deleted the things" << endl;
     }
+
+    cout << "returning the things" << endl;
     return returnMap_;
 }
 
@@ -334,17 +368,17 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
     }
 
     // vector<map<string, TObjArray*>> fullContainer;  //<GammaIndex,< return maps >>
-    TFile* outFile = new TFile("newCrayon.root", "RECREATE");
+    TFile* outFile = new TFile("newCrayon_2.root", "RECREATE");
     inFile->cd();
     TObjArray* shortList = new TObjArray;
     shortList->SetName("shortList");
 
     //! Do the N singles here
     TH2* singlesHist = SparseZP((THnSparse*)gDirectory->Get("dd_tof_NA_qdc_tape"), {3, {1, 300}}, {1, {0, 1}}, {0, 2}, false);
-    singlesHist->SetName("dd_tof_qdc");
+    singlesHist->SetName("dd_tof_qdc_neutronSingles");
     singlesHist->Sumw2();  //needed to care errors through
     TObjArray* nSinglesArray_ = QDCbackground_(singlesHist, {TOFRANGE.first, TOFRANGE.second}, false);
-    ((TH2D*)nSinglesArray_->First())->SetName("dd_tof_qdc");
+    ((TH2D*)nSinglesArray_->First())->SetName("dd_tof_qdc_singles_subed");
     string newTOAName = (string)nSinglesArray_->GetName() + "_neutronSingles";
     nSinglesArray_->SetName(newTOAName.c_str());
 
@@ -364,26 +398,25 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
         Double_t curEnergy = GammaEnergies.at(it);
         map<string, TObjArray*> tmp = GammaProjector(curEnergy, nSparseList);
 
-        //! store the full return for debuggin and checks
-
+        cout << "Writing" << endl;
         //! Pull the subtracted histos out of the map
         for (auto iti = tmp.begin(); iti != tmp.end(); iti++) {
             outFile->cd();
             (*iti).second->Write();
             inFile->cd();
 
-            // TH2D* subtractedHist = (TH2D*)((*iti).second->First()->Clone());
-            // shortList->Add(subtractedHist);
+            TH2D* subtractedHist = (TH2D*)((*iti).second->First()->Clone());
+            shortList->Add(subtractedHist);
             (*iti).second->Delete();
         }
+        tmp.clear();
     }
 
+    inFile->Close();
     outFile->cd();
-    // TFile* outfile = new TFile("newCrayon",RECREATE);
     shortList->Write();
-    // gDirectory->Add(shortList);
+    gApplication->Terminate();
 
-    //gDirectory->Add(fullContainer);
     return 0;
 }
 
