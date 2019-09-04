@@ -2,7 +2,7 @@
 #include <utility>
 #include <vector>
 
-#include "/opt/root/6.14.06/include/TROOT.h"
+#include "TROOT.h"
 #include "TCanvas.h"
 #include "TF1.h"
 #include "TFile.h"

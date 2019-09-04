@@ -162,7 +162,8 @@
         "type_traits": "cpp",
         "tuple": "cpp",
         "typeinfo": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "ScintPreCalibrator.C": "cpp"
     },
     "cSpell.enabled": false
 }
