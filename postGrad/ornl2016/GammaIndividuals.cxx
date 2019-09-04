@@ -1,7 +1,7 @@
 /*Plots the all of the individual channels of the respective detector 
  */
 
-#include </opt/root/6.14.06/include/TROOT.h>
+#include <TROOT.h>
 #include <TCanvas.h>
 #include <TFile.h>
 #include <TH1.h>
