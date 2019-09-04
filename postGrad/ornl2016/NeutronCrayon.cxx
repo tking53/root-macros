@@ -18,7 +18,9 @@ using namespace std;
 
 // vector<Double_t> GammaEnergies = {414.3, 692, 814, 1037.3, 1180, 1335.9, 1402.4, 1506.9, 2083};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
 
-vector<Double_t> GammaEnergies = {814};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
+// vector<Double_t> GammaEnergies = {814};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
+
+vector<Double_t> GammaEnergies = {414.3, 692, 814, 1506.9};  //Combining 813 and 815 into 1 line since they are overlapping (will use a slightly larger sigma for that line)
 
 map<string, pair<Double_t, Double_t>> GammaRes = {{"h", {4.8, 7}}, {"n", {7.6, 7}}, {"c", {0.75, 1.25}}};  // ~% resolutions as % first is single lines and second is 813/815
 
@@ -318,22 +320,15 @@ map<string, TObjArray*> GammaProjector(Double_t GamEnergy, vector<string> nSpars
 
         Double_t GamL, GamH;
         if (GamEnergy == 814) {
-            // if (GammaType == "c") {
-            //     cout<<"Special CLover"<<endl;
-            //     GamEnergy = 809;
-            // }
             GamL = GamEnergy - ((GammaRes.find(GammaType.c_str())->second.first / 100) * GamEnergy) / 2;
             GamH = GamEnergy + ((GammaRes.find(GammaType.c_str())->second.first / 100) * GamEnergy) / 2;
-            // if (GammaType == "c") {
-            //     GamEnergy = 814;
-            // }
         } else {
             GamL = GamEnergy - ((GammaRes.find(GammaType.c_str())->second.second / 100) * GamEnergy) / 2;
             GamH = GamEnergy + ((GammaRes.find(GammaType.c_str())->second.second / 100) * GamEnergy) / 2;
         }
 
         TH2D* workingHist = SparseZP(curSparse, {3, {tapeCut.first, tapeCut.second}}, {1, {GamL, GamH}}, {0, 2}, false);
-        cout<<"GamL = "<<GamL << "       GamH= "<< GamH<<endl;
+        cout << "GamL = " << GamL << "       GamH= " << GamH << endl;
         workingHist->SetName(projectionName.str().c_str());
         workingHist->Sumw2();
         projectionName << "_subd";
@@ -366,9 +361,14 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
     if (nSparseList.empty()) {
         nSparseList = AutoLoadTHnSparseList(inFile);
     }
+    //! catch for autoload returning empty vector (i.e. called on an incompatible file)
+    if (nSparseList.empty()) {
+        cout << "ERROR::AutoLoadTHnSparseList() Failed to load any sparses. This means that this file is most likely not a compatible file" << endl;
+    }
 
-    // vector<map<string, TObjArray*>> fullContainer;  //<GammaIndex,< return maps >>
-    TFile* outFile = new TFile("newCrayon_2.root", "RECREATE");
+    TFile* fullOutFile = new TFile("newCrayon_full.root", "RECREATE");
+    TFile* shortOutFile = new TFile("newCrayon_short.root", "RECREATE");
+
     inFile->cd();
     TObjArray* shortList = new TObjArray;
     shortList->SetName("shortList");
@@ -382,15 +382,22 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
     string newTOAName = (string)nSinglesArray_->GetName() + "_neutronSingles";
     nSinglesArray_->SetName(newTOAName.c_str());
 
-    outFile->cd();
+    fullOutFile->cd();
     nSinglesArray_->Write();
     inFile->cd();
 
-    //! store the full return for debuggin and checks
-    //fullContainer.emplace_back(singlesMap);
-
     //! pull the subtracted one out
     shortList->Add((TH2D*)nSinglesArray_->First()->Clone());
+
+    //! Load the Gamma Flash high binning plot here directly from TSelector
+    TH2D* gFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash");
+    fullOutFile->cd();
+    gFlash->Write();
+    inFile->cd();
+    shortList->Add(gFlash->Clone());
+
+    //! Loop over list of gammas
+    //TODO: need catch for no gamma sparse in list
 
     for (UInt_t it = 0; it < GammaEnergies.size(); it++) {
         cout << "gamm loop (" << it << ")" << endl;
@@ -399,22 +406,27 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
         map<string, TObjArray*> tmp = GammaProjector(curEnergy, nSparseList);
 
         cout << "Writing" << endl;
-        //! Pull the subtracted histos out of the map
-        for (auto iti = tmp.begin(); iti != tmp.end(); iti++) {
-            outFile->cd();
-            (*iti).second->Write();
-            inFile->cd();
+        if (!tmp.empty()) {
+            //! Pull the subtracted histos out of the map
+            for (auto iti = tmp.begin(); iti != tmp.end(); iti++) {
+                fullOutFile->cd();
+                (*iti).second->Write();
+                inFile->cd();
 
-            TH2D* subtractedHist = (TH2D*)((*iti).second->First()->Clone());
-            shortList->Add(subtractedHist);
-            (*iti).second->Delete();
+                TH2D* subtractedHist = (TH2D*)((*iti).second->First()->Clone());
+                shortList->Add(subtractedHist);
+                (*iti).second->Delete();
+            }
+            tmp.clear();
         }
-        tmp.clear();
     }
 
     inFile->Close();
-    outFile->cd();
+    fullOutFile->cd();
+    fullOutFile->Close();
+    shortOutFile->cd();
     shortList->Write();
+    shortOutFile->Close();
     gApplication->Terminate();
 
     return 0;
