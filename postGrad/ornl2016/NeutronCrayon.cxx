@@ -390,11 +390,20 @@ Int_t NewCrayon(string inFileStr = "_file0", vector<string> nSparseList = {}, pa
     shortList->Add((TH2D*)nSinglesArray_->First()->Clone());
 
     //! Load the Gamma Flash high binning plot here directly from TSelector
-    TH2D* gFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash");
+    TH2D* sFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash_s");
+    TH2D* cFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash_c");
+    TH2D* hFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash_h");
+    TH2D* nFlash = (TH2D*)gDirectory->Get("dd_qdc_tof_flash_n");
     fullOutFile->cd();
-    gFlash->Write();
+    sFlash->Write();
+    cFlash->Write();
+    hFlash->Write();
+    nFlash->Write();
     inFile->cd();
-    shortList->Add(gFlash->Clone());
+    shortList->Add(sFlash->Clone());
+    shortList->Add(cFlash->Clone());
+    shortList->Add(hFlash->Clone());
+    shortList->Add(nFlash->Clone());
 
     //! Loop over list of gammas
     //TODO: need catch for no gamma sparse in list

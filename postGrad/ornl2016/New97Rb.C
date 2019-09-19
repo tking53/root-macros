@@ -107,7 +107,13 @@ void New97Rb::SlaveBegin(TTree * /*tree*/) {
     TQ_BeamOn_key = "dd_tof_qdc_" + to_string((Int_t)beamOn_Gate_.first) + "_" + to_string((Int_t)beamOn_Gate_.second);
     TQ_BeamOff_key = "dd_tof_qdc_" + to_string((Int_t)beamOff_Gate_.first) + "_" + to_string((Int_t)beamOff_Gate_.second);
 
-    HistList->Add(new TH2F("dd_qdc_tof_flash", "ToF vs QDC: Gamma Flash", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
+    HistList->Add(new TH2F("dd_qdc_tof_flash_s", "ToF vs QDC: Gamma Flash: Singles", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
+
+    HistList->Add(new TH2F("dd_qdc_tof_flash_c", "ToF vs QDC: Gamma Flash: C Gated ", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
+
+    HistList->Add(new TH2F("dd_qdc_tof_flash_h", "ToF vs QDC: Gamma Flash: H Gated ", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
+
+    HistList->Add(new TH2F("dd_qdc_tof_flash_n", "ToF vs QDC: Gamma Flash: N Gated ", 1000, 0, 50, VQdcBins_, 0, VQdcBins_));  //50ps bins
 
     //! Tof vs qdc vs Tape Timing in a Dim == 4 Sparse like the others so that it can be sliced with the same code
     HistList->Add(new THnSparseF("dd_tof_NA_qdc_tape", "Vandle corTof vs Vandle QDC vs empty Gamma  vs Time in Cycle", 4, new Int_t[4]{VTofBins_ * binNs_, 1, VQdcBins_, totalCycleTimeBins_}, new Double_t[4]{0, 0, 0, 0}, new Double_t[4]{static_cast<Double_t>(VTofBins_), static_cast<Double_t>(1), static_cast<Double_t>(VQdcBins_), static_cast<Double_t>(totalCycleTimeBins_)}));
@@ -445,16 +451,10 @@ Bool_t New97Rb::Process(Long64_t entry) {
         }
 
         //ONLY plot into the high binned one if we are near the gamma flash
-        if (cortof_ < 50 && cortof_ > 0) {
-            ((TH2 *)HistList->FindObject("dd_qdc_tof_flash"))->Fill(cortof_, qdc_);
+        if (BeamOn_ && cortof_ < 50 && cortof_ > 0) {
+            ((TH2 *)HistList->FindObject("dd_qdc_tof_flash_s"))->Fill(cortof_, qdc_);
         }
 
-        string BeamState_;
-        if (BeamOn_) {
-            BeamState_ = "_Bon";
-        } else if (BeamOff_) {
-            BeamState_ = "_Boff";
-        }
         Double_t fuzCortof_;
         if (cortof_ > 25) {
             fuzCortof_ = FuzzTheToF(cortof_);
@@ -480,6 +480,9 @@ Bool_t New97Rb::Process(Long64_t entry) {
         //! already has betaGammaTDiff check in the creation of the *_good_singles_ vectors
         // if (BeamOn_ || BeamOff_) {
         if (!h_good_singles_.empty()) {
+            if (BeamOn_ && cortof_ < 50 && cortof_ > 0) {
+                ((TH2 *)HistList->FindObject("dd_qdc_tof_flash_h"))->Fill(cortof_, qdc_);
+            }
             for (auto it = h_good_singles_.begin(); it != h_good_singles_.end(); it++) {
                 //! cortof vs specific gammas
                 ((THnSparse *)HistList->FindObject("dd_tof_h_qdc_tape"))->Fill(new Double_t[4]{cortof_, (*it), qdc_, tapeTime_});
@@ -496,6 +499,9 @@ Bool_t New97Rb::Process(Long64_t entry) {
             }  //end loop over good singles
         }
         if (!n_good_singles_.empty()) {
+            if (BeamOn_ && cortof_ < 50 && cortof_ > 0) {
+                ((TH2 *)HistList->FindObject("dd_qdc_tof_flash_n"))->Fill(cortof_, qdc_);
+            }
             for (auto it = n_good_singles_.begin(); it != n_good_singles_.end(); it++) {
                 //! cortof vs specific gammas
                 ((THnSparse *)HistList->FindObject("dd_tof_n_qdc_tape"))->Fill(new Double_t[4]{cortof_, (*it), qdc_, tapeTime_});
@@ -505,6 +511,9 @@ Bool_t New97Rb::Process(Long64_t entry) {
             }  //end loop over good singles
         }
         if (!c_good_singles_.empty()) {
+            if (BeamOn_ && cortof_ < 50 && cortof_ > 0) {
+                ((TH2 *)HistList->FindObject("dd_qdc_tof_flash_c"))->Fill(cortof_, qdc_);
+            }
             for (auto it = c_good_singles_.begin(); it != c_good_singles_.end(); it++) {
                 //! cortof vs specific gammas
                 ((THnSparse *)HistList->FindObject("dd_tof_c_qdc_tape"))->Fill(new Double_t[4]{cortof_, (*it), qdc_, tapeTime_});
