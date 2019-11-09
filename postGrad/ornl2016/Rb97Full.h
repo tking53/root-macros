@@ -16,7 +16,7 @@
 #include <TApplication.h>
 #include <TChain.h>
 #include <TFile.h>
-#include "ProcessorRootStruc.hpp"
+#include "PaassRootStruct.hpp"
 
 // Reader Headers
 #include <TTreeReader.h>

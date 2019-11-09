@@ -17,7 +17,7 @@
 #include <TTreeReaderArray.h>
 
 // Headers needed by this particular selector
-#include "ProcessorRootStruc.hpp"
+#include "PaassRootStruct.hpp"
 #include <vector>
 
 

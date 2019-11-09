@@ -1,7 +1,7 @@
 #include <TTreeReader.h>
 #include <TTreeReaderArray.h>
 #include <TTreeReaderValue.h>
-#include <ProcessorRootStruc.hpp>
+#include <PaassRootStruct.hpp>
 #include <vector>
 #include "TApplication.h"
 #include "TCanvas.h"

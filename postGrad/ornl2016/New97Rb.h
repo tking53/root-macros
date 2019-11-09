@@ -23,7 +23,7 @@
 
 //  Histogram and Data Structure Headers
 #include "GSaddback.hpp"
-#include "ProcessorRootStruc.hpp"
+#include "PaassRootStruct.hpp"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
