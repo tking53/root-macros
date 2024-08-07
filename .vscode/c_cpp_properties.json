@@ -1,6 +1,7 @@
-{"env": {
-    "ROOTSYSFallback" : "/opt/root/6.14.06"
-},
+{
+    "env": {
+        "ROOTSYSFallback": "/opt/root/6.14.06"
+    },
     "configurations": [
         {
             "name": "Linux",
@@ -11,7 +12,8 @@
                 "/usr/local/include/**",
                 "/usr/include/**",
                 "/usr/include/c++/**",
-                "${env:ROOTSYSFallback}/include/**"
+                "${env:ROOTSYSFallback}/include/**",
+                "/opt/root/6.24.06/include"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,
@@ -30,7 +32,23 @@
             "defines": [],
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
-            "cppStandard": "c++11"            
+            "cppStandard": "c++11"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${default}",
+                "/opt/root/6.24.06/include/**",
+                "${workspaceFolder}/**",
+                "${env:CPLUS_INCLUDE_PATH}/**",
+                "/usr/local/include/**",
+                "${env:ROOTSYSFallback}/include/**"
+            ],
+            "defines": [],
+            "macFrameworkPath": [],
+            "intelliSenseMode": "macos-clang-arm64",
+            "compilerPath": "/usr/bin/clang",
+            "cppStandard": "c++17"
         }
     ],
     "version": 4
