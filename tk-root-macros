@@ -1,0 +1,18 @@
+#%Module1.0
+##
+## tk-root-macros
+##
+## @author T.T. King
+#
+proc ModulesHelp {} {
+	global version modroot
+
+	puts stderr "My Root Macros, stuff for vim"
+}
+module-whatis "Adds my root macro folders to env for vim"
+
+# set     myapp_home        "$env(HOME)/myapp"
+
+set topdir 	"$env(HOME)/.tk-root-macros"
+
+prepend-path CPLUS_INCLUDE_PATH	$topdir/utilities/include
