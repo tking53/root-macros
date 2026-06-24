@@ -1,4 +1,4 @@
-#include "flattenTree.h"
+#include "flattenTree.hpp"
 using namespace std;
 using namespace processor_struct;
 

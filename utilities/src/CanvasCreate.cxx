@@ -1,8 +1,5 @@
-#include "TApplication.h"
 #include "TCanvas.h"
-#include "TObjArray.h"
 #include "TROOT.h"
-#include "TSystem.h"
 
 using namespace std;
 TCanvas* TC(string name) {
