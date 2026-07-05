@@ -1,4 +1,5 @@
 {
+	std::cout<<"Loading macro based rootlogon"<<std::endl;
 	bool genscanLoaded = gSystem->Getenv("GENSCANSYS");
 
 	const char* MacMacroPath_TK="${HOME}/TTK/root-macros";
