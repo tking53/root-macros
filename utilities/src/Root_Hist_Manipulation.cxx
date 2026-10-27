@@ -11,8 +11,9 @@
 
 #include "iostream"
 
+#include "Root_Hist_Manipulation.hpp"
 
-void xc(Double_t x1, Double_t x2, Bool_t update=true){
+void xc(Double_t x1, Double_t x2, Bool_t update){
 	// x axis zoom in on the current pad. If update is true, the pad will be modified and updated after setting the range.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set x-axis range." << std::endl;
@@ -41,7 +42,7 @@ void xc(Double_t x1, Double_t x2, Bool_t update=true){
 	
 }
 
-void yc(Double_t x1, Double_t x2, Bool_t update=true){
+void yc(Double_t x1, Double_t x2, Bool_t update){
 	// y axis zoom in on the current pad. If update is true, the pad will be modified and updated after setting the range.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set y-axis range." << std::endl;
@@ -69,7 +70,7 @@ void yc(Double_t x1, Double_t x2, Bool_t update=true){
 	}
 }
 
-void dl(Double_t x1, Double_t x2, Bool_t update=true){
+void dl(Double_t x1, Double_t x2, Bool_t update){
 	// y axis zoom in on the current pad. If update is true, the pad will be modified and updated after setting the range.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set y-axis range." << std::endl;
@@ -128,7 +129,7 @@ void ych(TH2* hist, Double_t x1, Double_t x2){
 }
 
 
-void lx(Int_t logx=1, Bool_t update=true){
+void lx(Int_t logx, Bool_t update){
 	// Set the log scale for the x-axis of the current pad. If update is true, the pad will be modified and updated after setting the log scale.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set log scale." << std::endl;
@@ -140,7 +141,7 @@ void lx(Int_t logx=1, Bool_t update=true){
 		gPad->Update();
 	}
 }
-void ly(Int_t logy=1, Bool_t update=true){
+void ly(Int_t logy, Bool_t update){
 	// Set the log scale for the y-axis of the current pad. If update is true, the pad will be modified and updated after setting the log scale.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set log scale." << std::endl;
@@ -152,7 +153,7 @@ void ly(Int_t logy=1, Bool_t update=true){
 		gPad->Update();
 	}
 }
-void lz(Int_t logz=1, Bool_t update=true){
+void lz(Int_t logz, Bool_t update){
 	// Set the log scale for the z-axis of the current pad. If update is true, the pad will be modified and updated after setting the log scale.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set log scale." << std::endl;
@@ -276,7 +277,7 @@ void cuall(){
 	}
 }
 
-void centertitle(Bool_t update=true){
+void centertitle(Bool_t update){
 	// Center the histogram title box on the current active pad.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to center title on." << std::endl;
@@ -293,7 +294,7 @@ void centertitle(Bool_t update=true){
 	}
 }
 
-void centertitleall(Bool_t update=true){
+void centertitleall(Bool_t update){
 	// Center title boxes on all pads in the current canvas.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to center titles on." << std::endl;
@@ -339,7 +340,7 @@ void lincol(TH1* hist, Color_t color){
 	hist->SetLineColor(color);
 }
 
-void lincol(Color_t color, Bool_t update=true){
+void lincol(Color_t color, Bool_t update){
 	// Set the line color of the histogram in the current pad.
 	if (!gPad) {
 		std::cout << "\033[1;31m[Error]\033[0m No current pad to set x-axis range." << std::endl;
@@ -366,18 +367,4 @@ void lincol(Color_t color, Bool_t update=true){
 		gPad->Update();
 	}
 	
-}
-
-template <typename HistT>
-HistT* gethist(TFile* file, const char* histName) {
-	// Retrieve a histogram with an explicit type from the given ROOT file.
-	if (!file) {
-		std::cout << "\033[1;31m[Error]\033[0m File pointer is null. Cannot retrieve histogram." << std::endl;
-		return nullptr;
-	}
-	if (!file->Get(histName)) {
-		std::cout << "\033[1;31m[Error]\033[0m Histogram '" << histName << "' not found in file '" << file->GetName() << "'." << std::endl;
-		return nullptr;
-	}
-	return dynamic_cast<HistT*>(file->Get(histName));
 }
